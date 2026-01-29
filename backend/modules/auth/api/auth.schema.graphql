@@ -2,8 +2,13 @@ type AuthResponse {
   accessToken: String!
 }
 
+type CurrentUser {
+  id: ID!
+  email: String!
+}
+
 type Query {
-  _empty: String
+  getUser: CurrentUser!
 }
 
 type Mutation {

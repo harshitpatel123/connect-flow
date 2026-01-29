@@ -4,7 +4,7 @@ import { AuthPayload } from "../domain/auth.types";
 export class JwtService {
   generateToken(payload: AuthPayload): string {
     return jwt.sign(payload, process.env.JWT_SECRET!, {
-      expiresIn: "15m" // Token valid for 15 minutes, change it to 1h for 1 hour
+      expiresIn: "15d" // Token valid for 15 days, change it to 1h for 1 hour
     });
   }
 

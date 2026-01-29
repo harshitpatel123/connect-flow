@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMutation } from '@apollo/client/react';
-import { LOGIN_MUTATION } from '@/graphql/auth.api';
+import { LOGIN } from '@/graphql/auth.api';
 import { auth } from '@/lib/auth';
 
 export default function LoginPage() {
@@ -14,14 +14,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, { fetchPolicy: 'no-cache' });
+  const [login, { loading }] = useMutation(LOGIN, { fetchPolicy: 'no-cache' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      const { data } = await loginMutation({ variables: { email, password } });
+      const { data } = await login({ variables: { email, password } });
 
       if (data?.login?.accessToken) {
         auth.setToken(data.login.accessToken);

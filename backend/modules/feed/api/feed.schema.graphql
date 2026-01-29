@@ -1,0 +1,7 @@
+type FeedItem {
+  postId: ID!
+}
+
+type Query {
+  myFeed: [FeedItem!]!
+}

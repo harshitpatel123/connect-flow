@@ -1,6 +1,16 @@
+'use client';
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { auth } from "@/lib/auth";
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(auth.isAuthenticated());
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center px-4">
       <div className="max-w-4xl w-full text-center">
@@ -20,22 +30,36 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              Sign In
-              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-            
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-indigo-600 text-base font-semibold rounded-xl text-indigo-600 bg-white hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105"
-            >
-              Create Account
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              >
+                Go to Dashboard
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  Sign In
+                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+                
+                <Link
+                  href="/auth/signup"
+                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-indigo-600 text-base font-semibold rounded-xl text-indigo-600 bg-white hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105"
+                >
+                  Create Account
+                </Link>
+              </>
+            )}
           </div>
           
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">

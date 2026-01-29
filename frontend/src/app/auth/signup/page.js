@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMutation } from '@apollo/client/react';
-import { REGISTER_MUTATION } from '@/graphql/auth.api';
+import { REGISTER } from '@/graphql/auth.api';
 import { auth } from '@/lib/auth';
 
 export default function SignupPage() {
@@ -16,7 +16,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const [registerMutation, { loading }] = useMutation(REGISTER_MUTATION, { fetchPolicy: 'no-cache' });
+  const [register, { loading }] = useMutation(REGISTER, { fetchPolicy: 'no-cache' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ export default function SignupPage() {
     }
 
     try {
-      const { data } = await registerMutation({ variables: { email, password } });
+      const { data } = await register({ variables: { email, password } });
 
       if (data?.register?.accessToken) {
         auth.setToken(data.register.accessToken);
