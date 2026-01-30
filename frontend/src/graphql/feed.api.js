@@ -3,7 +3,18 @@ import { gql } from '@apollo/client';
 export const MY_FEED = gql`
   query GetMyFeed {
     myFeed {
-      postId
+      id
+      content
+      createdAt
+      likeCount
+      commentCount
+      viewCount
+      isLiked
+      categoryTags
+      user {
+        id
+        email
+      }
     }
   }
 `;

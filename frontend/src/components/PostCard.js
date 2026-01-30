@@ -16,6 +16,7 @@ export default function PostCard({ post, onUpdate }) {
   const [likes, setLikes] = useState([]);
   const [comments, setComments] = useState([]);
   const [expandedTags, setExpandedTags] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const cardRef = useRef(null);
 
   const [likePost] = useMutation(LIKE_POST);
@@ -74,7 +75,6 @@ export default function PostCard({ post, onUpdate }) {
   };
 
   const handleShowComments = async () => {
-    if (commentCount === 0) return;
     try {
       const { data } = await fetchComments({ variables: { postId: post.id } });
       setComments(data?.postComments || []);
@@ -193,7 +193,13 @@ export default function PostCard({ post, onUpdate }) {
           </button>
 
           <button
-            onClick={() => setShowComments(!showComments)}
+            onClick={async () => {
+              if (!showComments) {
+                await handleShowComments();
+              } else {
+                setShowComments(false);
+              }
+            }}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,41 +254,57 @@ export default function PostCard({ post, onUpdate }) {
                 </svg>
               </button>
             </div>
+            
+            {/* Comment Input */}
             <form onSubmit={handleComment} className="flex gap-2 mb-4">
               <input
                 type="text"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Write a comment..."
+                placeholder="Add a comment..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 placeholder-gray-400"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all"
+                disabled={!commentText.trim()}
+                className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Post
               </button>
             </form>
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            
+            {/* Comments List */}
+            <div className="space-y-3">
               {comments.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">No comments yet</p>
+                <p className="text-sm text-gray-500 text-center py-4">No comments yet. Be the first to comment!</p>
               ) : (
-                comments.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-start gap-3">
+                <>
+                  {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
+                    <div key={comment.id} className="flex items-start gap-3">
                       <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-bold text-sm">
                           {comment.user?.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{comment.user?.email}</p>
-                        <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                        <p className="text-sm">
+                          <span className="font-medium text-gray-900">{comment.user?.email}</span>
+                          {' '}
+                          <span className="text-gray-700">{comment.content}</span>
+                        </p>
                         <p className="text-xs text-gray-500 mt-1">{new Date(parseInt(comment.createdAt)).toLocaleString()}</p>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                  {comments.length > 3 && (
+                    <button
+                      onClick={() => setShowAllComments(!showAllComments)}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    >
+                      {showAllComments ? 'Show less' : `View all ${comments.length} comments`}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

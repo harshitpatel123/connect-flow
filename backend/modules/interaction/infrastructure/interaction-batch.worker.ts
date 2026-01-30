@@ -3,7 +3,7 @@ import { seenStore } from "internal/cache/seen.store";
 import { prisma } from "internal/database/prisma.client";
 
 const BATCH_SIZE = 100;
-const INTERVAL_MS = 10000; // 10 seconds
+const INTERVAL_MS = 1000; // 1 seconds
 
 export class InteractionBatchWorker {
   private isRunning = false;

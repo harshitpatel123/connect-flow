@@ -2,6 +2,9 @@ import { interactionService } from "apps/api/services";
 import { postService } from "apps/api/services";
 import { authService } from "apps/api/services";
 import { AuthPayload } from "modules/auth/domain/auth.types";
+import { prisma } from "internal/database/prisma.client";
+import { likeStore } from "internal/cache/like.store";
+import { seenStore } from "internal/cache/seen.store";
 
 type Context = {
   user?: AuthPayload;
@@ -41,6 +44,59 @@ export const InteractionResolver = {
       } catch (error) {
         console.error("❌ [INTERACTION RESOLVER] Error fetching post comments:", error);
         return [];
+      }
+    },
+    myInteractionHistory: async (_: unknown, __: unknown, { user }: Context) => {
+      if (!user) throw new Error("Unauthorized");
+      
+      try {
+        const likes = await prisma.postLike.findMany({
+          where: { userId: user.userId },
+          orderBy: { createdAt: "desc" },
+          select: { postId: true }
+        });
+        
+        const comments = await prisma.comment.findMany({
+          where: { userId: user.userId },
+          orderBy: { createdAt: "desc" },
+          select: { postId: true }
+        });
+        
+        const likedPostIds = [...new Set(likes.map(l => l.postId))];
+        const commentedPostIds = [...new Set(comments.map(c => c.postId))];
+        
+        const [likedPosts, commentedPosts] = await Promise.all([
+          postService.getPostsByIds(likedPostIds),
+          postService.getPostsByIds(commentedPostIds)
+        ]);
+        
+        const allUserIds = [...new Set([...likedPosts.map(p => p.userId), ...commentedPosts.map(p => p.userId)])];
+        const users = await authService.getUsersByIds(allUserIds);
+        const userMap = new Map(users.map(u => [u.id, u]));
+        
+        const enrichPosts = async (posts: any[]) => {
+          return Promise.all(posts.map(async (post) => {
+            const likeCount = await likeStore.getLikeCount(post.id) || post.likeCount;
+            const viewCount = await seenStore.getViewCount(post.id) || Number(post.viewCount);
+            const isLiked = await likeStore.hasLiked(user.userId, post.id);
+            return {
+              ...post,
+              likeCount,
+              viewCount,
+              commentCount: post.commentCount,
+              isLiked,
+              user: userMap.get(post.userId)
+            };
+          }));
+        };
+        
+        return {
+          likedPosts: await enrichPosts(likedPosts),
+          commentedPosts: await enrichPosts(commentedPosts)
+        };
+      } catch (error) {
+        console.error("❌ [INTERACTION RESOLVER] Error fetching interaction history:", error);
+        return { likedPosts: [], commentedPosts: [] };
       }
     },
   },

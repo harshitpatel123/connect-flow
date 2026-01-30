@@ -8,6 +8,25 @@ type Mutation {
 type Query {
   postLikes(postId: ID!): [PostLike!]!
   postComments(postId: ID!): [Comment!]!
+  myInteractionHistory: InteractionHistory!
+}
+
+type InteractionHistory {
+  likedPosts: [Post!]!
+  commentedPosts: [Post!]!
+}
+
+type Post {
+  id: ID!
+  userId: String!
+  content: String!
+  likeCount: Int!
+  commentCount: Int!
+  viewCount: Int!
+  isLiked: Boolean!
+  categoryTags: [String!]!
+  createdAt: String!
+  user: User
 }
 
 type PostLike {

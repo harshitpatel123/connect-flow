@@ -1,7 +1,21 @@
-type FeedItem {
-  postId: ID!
+type Post {
+  id: ID!
+  userId: String!
+  content: String!
+  likeCount: Int!
+  commentCount: Int!
+  viewCount: Int!
+  isLiked: Boolean!
+  categoryTags: [String!]!
+  createdAt: String!
+  user: User
+}
+
+type User {
+  id: ID!
+  email: String!
 }
 
 type Query {
-  myFeed: [FeedItem!]!
+  myFeed: [Post!]!
 }

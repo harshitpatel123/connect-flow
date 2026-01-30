@@ -7,27 +7,18 @@ import { auth } from '@/lib/auth';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
 import { MY_FEED } from '@/graphql/feed.api';
-import { POSTS_BY_IDS } from '@/graphql/post.api';
 import toast from 'react-hot-toast';
 
 export default function FeedPage() {
   const router = useRouter();
   const [posts, setPosts] = useState([]);
 
-  const [myFeed, { loading: loadingFeed }] = useLazyQuery(MY_FEED, { fetchPolicy: 'no-cache' });
-  const [postsByIds, { loading: loadingPosts }] = useLazyQuery(POSTS_BY_IDS, { fetchPolicy: 'no-cache' });
+  const [myFeed, { loading }] = useLazyQuery(MY_FEED, { fetchPolicy: 'no-cache' });
 
   const loadFeed = async () => {
     try {
-      const { data: feedData } = await myFeed();
-      const postIds = feedData?.myFeed?.map(item => item.postId) || [];
-      
-      if (postIds.length > 0) {
-        const { data: postsData } = await postsByIds({ variables: { ids: postIds } });
-        setPosts(postsData?.postsByIds || []);
-      } else {
-        setPosts([]);
-      }
+      const { data } = await myFeed();
+      setPosts(data?.myFeed || []);
     } catch (error) {
       toast.error(error.message || 'Failed to load feed');
     }
@@ -40,8 +31,6 @@ export default function FeedPage() {
       loadFeed();
     }
   }, []);
-
-  const loading = loadingFeed || loadingPosts;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
@@ -91,7 +80,7 @@ export default function FeedPage() {
           </div>
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto px-4 pb-6 space-y-6">
+        <div className="max-w-4xl mx-auto px-2 pb-6 space-y-6">
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
