@@ -10,11 +10,13 @@ export class PostService {
   private createPostUseCase: CreatePostUseCase;
   private getPostsUseCase: GetPostsUseCase;
   private getPostsByIdsUseCase: GetPostsByIdsUseCase;
+  private repository: PostRepository;
 
   constructor(prisma: PrismaClient) {
     const repo = new PostRepository(prisma);
     const publisher = new PostEventPublisher();
     
+    this.repository = repo;
     this.createPostUseCase = new CreatePostUseCase(repo, publisher);
     this.getPostsUseCase = new GetPostsUseCase(repo);
     this.getPostsByIdsUseCase = new GetPostsByIdsUseCase(repo);
@@ -30,5 +32,13 @@ export class PostService {
 
   getPostsByIds(ids: string[]) {
     return this.getPostsByIdsUseCase.execute(ids);
+  }
+
+  getPostLikes(postId: string) {
+    return this.repository.getPostLikes(postId);
+  }
+
+  getPostComments(postId: string) {
+    return this.repository.getPostComments(postId);
   }
 }

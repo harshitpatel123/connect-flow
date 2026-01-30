@@ -45,11 +45,11 @@ export async function logFeedData() {
     const topics = await admin.listTopics();
     console.log(`\n📝 Topics: ${topics.join(", ")}`);
 
-    if (topics.includes("post-events")) {
-      const topicMetadata = await admin.fetchTopicMetadata({ topics: ["post-events"] });
+    if (topics.includes("post-created")) {
+      const topicMetadata = await admin.fetchTopicMetadata({ topics: ["post-created"] });
       const topic = topicMetadata.topics[0];
 
-      console.log(`\n📡 Topic: post-events`);
+      console.log(`\n📡 Topic: post-created`);
       console.log(`   Partitions: ${topic.partitions.length}`);
 
       for (const partition of topic.partitions) {
@@ -59,9 +59,14 @@ export async function logFeedData() {
         console.log(`      ISR: ${partition.isr.join(", ")}`);
       }
 
-      const consumer = kafka.consumer({ groupId: "debug-reader" });
+      // Use unique consumer group to always read from beginning
+      const uniqueGroupId = `debug-reader-${Date.now()}`;
+      console.log(`\n🔍 Creating consumer with group: ${uniqueGroupId}`);
+      console.log(`   (Using unique group ID to read all events from beginning)`);
+      
+      const consumer = kafka.consumer({ groupId: uniqueGroupId });
       await consumer.connect();
-      await consumer.subscribe({ topic: "post-events", fromBeginning: true });
+      await consumer.subscribe({ topic: "post-created", fromBeginning: true });
 
       const events: any[] = [];
 
@@ -79,10 +84,18 @@ export async function logFeedData() {
         }
       });
 
+      console.log(`\n⏳ Waiting for messages...`);
       await new Promise(resolve => setTimeout(resolve, 2000));
       await consumer.disconnect();
 
       console.log(`\n📜 Events in stream: ${events.length}`);
+      if (events.length === 0) {
+        console.log(`\n   ℹ️  No events found. This could mean:`);
+        console.log(`      - No posts have been created yet`);
+        console.log(`      - Kafka data was cleared`);
+        console.log(`      - Events expired (check retention settings)`);
+      }
+      
       events.forEach((event, index) => {
         console.log(`\n   Event ${index + 1}:`);
         console.log(`      Partition: ${event.partition}`);

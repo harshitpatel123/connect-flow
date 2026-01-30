@@ -14,13 +14,6 @@ export class GetFeedUseCase {
     console.log("✅ [GET FEED] Retrieved", postIds.length, "posts from feed");
     console.log("   Post IDs:", postIds.join(", "));
 
-    // Mark as seen AFTER serving
-    console.log("👁️  [GET FEED] Marking posts as seen...");
-    for (const postId of postIds) {
-      await this.seenStore.markSeen(userId, postId);
-    }
-    console.log("✅ [GET FEED] All posts marked as seen\n");
-
     return postIds.map((postId) => ({ postId }));
   }
 }

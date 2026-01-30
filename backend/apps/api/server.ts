@@ -8,19 +8,24 @@ import { JwtService } from "modules/auth/infrastructure/jwt.service";
 import { connectProducer } from "internal/messaging/kafka.producer";
 import { startFeedConsumer } from "modules/feed/infrastructure/feed-event.consumer";
 import { BuildFeedUseCase } from "modules/feed/application/build-feed.usecase";
-import { FeedStore } from "internal/cache/feed.store";
-import { SeenStore } from "internal/cache/seen.store";
+import { feedStore } from "internal/cache/feed.store";
+import { seenStore } from "internal/cache/seen.store";
 import { UserRepository } from "modules/auth/infrastructure/user.repository";
 import { prisma } from "internal/database/prisma.client";
+import { interactionBatchWorker } from "modules/interaction/infrastructure/interaction-batch.worker";
+import { warmUpRedisCounters } from "internal/cache/redis-warmup";
 
 const jwtService = new JwtService();
-const feedStore = new FeedStore();
-const seenStore = new SeenStore();
 const buildFeedUseCase = new BuildFeedUseCase(feedStore, seenStore);
-
 
 await connectProducer();
 await startFeedConsumer(buildFeedUseCase, new UserRepository(prisma));
+
+// Warm up Redis counters from database
+await warmUpRedisCounters();
+
+// Start batch worker for likes and views
+interactionBatchWorker.start();
 
 const server = new ApolloServer({
   typeDefs,

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLazyQuery } from '@apollo/client/react';
 import { auth } from '@/lib/auth';
 import Header from '@/components/Header';
+import PostCard from '@/components/PostCard';
 import { MY_FEED } from '@/graphql/feed.api';
 import { POSTS_BY_IDS } from '@/graphql/post.api';
 import toast from 'react-hot-toast';
@@ -45,6 +46,21 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <Header />
+      
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={loadFeed}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
+          >
+            <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh Feed
+          </button>
+        </div>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -75,24 +91,13 @@ export default function FeedPage() {
           </div>
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto py-6 px-4 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 pb-6 space-y-6">
           {posts.map((post) => (
-            <div key={post.id} className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">{post.user?.email?.charAt(0).toUpperCase()}</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-lg">{post.user?.email}</p>
-                    <p className="text-sm text-gray-500">{new Date(parseInt(post.createdAt)).toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 min-h-[400px] flex items-center justify-center">
-                  <p className="text-gray-900 text-2xl leading-relaxed whitespace-pre-wrap text-center">{post.content}</p>
-                </div>
-              </div>
-            </div>
+            <PostCard 
+              key={post.id} 
+              post={post} 
+              onUpdate={loadFeed}
+            />
           ))}
         </div>
       )}

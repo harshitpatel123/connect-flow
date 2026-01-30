@@ -12,12 +12,12 @@ export class PostEventPublisher {
     };
     
     console.log("\n📦 [KAFKA EVENT] Preparing event data:");
-    console.log("   Topic: post-events");
+    console.log("   Topic: post-created");
     console.log("   Event Type:", eventData.type);
     console.log("   Event Data:", JSON.stringify(eventData, null, 2));
 
     await producer.send({
-      topic: "post-events",
+      topic: "post-created",
       messages: [
         {
           key: event.postId,

@@ -14,7 +14,7 @@ export async function startFeedConsumer(
     console.log("✅ [KAFKA CONSUMER] Connected successfully");
     
     await consumer.subscribe({
-      topic: "post-events",
+      topic: "post-created",
       fromBeginning: false
     });
     console.log("✅ [KAFKA CONSUMER] Subscribed and listening for events...\n");
@@ -59,7 +59,7 @@ export async function startFeedConsumer(
     });
   } catch (error: any) {
     if (error.type === 'UNKNOWN_TOPIC_OR_PARTITION') {
-      console.log("⚠️  [KAFKA CONSUMER] Topic 'post-events' does not exist yet. It will be created on first post.\n");
+      console.log("⚠️  [KAFKA CONSUMER] Topic 'post-created' does not exist yet. It will be created on first post.\n");
     } else {
       console.error("❌ [KAFKA CONSUMER] Error:", error);
     }

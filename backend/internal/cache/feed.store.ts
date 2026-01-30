@@ -15,3 +15,5 @@ export class FeedStore {
     return redis.zrevrange(this.feedKey(userId), start, end);
   }
 }
+
+export const feedStore = new FeedStore();

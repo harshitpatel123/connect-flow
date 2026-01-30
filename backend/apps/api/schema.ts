@@ -20,5 +20,10 @@ const feedSchema = readFileSync(
   "utf8"
 )
 
+const interactionSchema = readFileSync(
+  join(__dirname, "../../modules/interaction/api/interaction.schema.graphql"),
+  "utf8"
+)
 
-export const typeDefs = authSchema + postSchema + feedSchema;
+
+export const typeDefs = authSchema + postSchema + feedSchema + interactionSchema;

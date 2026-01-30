@@ -3,11 +3,12 @@ import { PrismaClient } from "@prisma/client";
 export class PostRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async create(userId: string, content: string) {
+  async create(userId: string, content: string, categoryTags?: string[]) {
     return this.prisma.post.create({
       data: {
         userId,
-        content
+        content,
+        categoryTags: categoryTags || []
       }
     });
   }
@@ -22,6 +23,20 @@ export class PostRepository {
   async findByIds(ids: string[]) {
     return this.prisma.post.findMany({
       where: { id: { in: ids } },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async getPostLikes(postId: string) {
+    return this.prisma.postLike.findMany({
+      where: { postId },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async getPostComments(postId: string) {
+    return this.prisma.comment.findMany({
+      where: { postId },
       orderBy: { createdAt: "desc" }
     });
   }

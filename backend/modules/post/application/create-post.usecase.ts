@@ -16,7 +16,8 @@ export class CreatePostUseCase {
     // 1. Persist post (sync)
     const post = await this.postRepository.create(
       input.userId,
-      input.content
+      input.content,
+      input.categoryTags
     );
     console.log("✅ [CREATE POST] Post saved to database");
     console.log("   Post ID:", post.id);
