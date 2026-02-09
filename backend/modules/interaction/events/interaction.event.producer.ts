@@ -39,4 +39,17 @@ export class InteractionEventProducer {
 
     console.log("✅ [KAFKA EVENT] post-viewed event sent to Kafka");
   }
+
+  async postCommented(payload: { userId: string; postId: string }) {
+    console.log("\n📦 [KAFKA EVENT] Preparing post-commented event:");
+    console.log("   Topic: post-commented");
+    console.log("   Payload:", JSON.stringify(payload, null, 2));
+
+    await producer.send({
+      topic: "post-commented",
+      messages: [{ value: JSON.stringify(payload) }],
+    });
+
+    console.log("✅ [KAFKA EVENT] post-commented event sent to Kafka");
+  }
 }

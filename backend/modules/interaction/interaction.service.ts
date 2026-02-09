@@ -21,7 +21,7 @@ export class InteractionService {
     this.likePostUseCase = new LikePostUseCase(likeStore, eventProducer);
     this.unlikePostUseCase = new UnlikePostUseCase(likeStore, eventProducer);
     this.viewPostUseCase = new ViewPostUseCase(seenStore, eventProducer);
-    this.commentPostUseCase = new CommentPostUseCase(repository);
+    this.commentPostUseCase = new CommentPostUseCase(repository, eventProducer);
   }
 
   likePost(userId: string, postId: string) {

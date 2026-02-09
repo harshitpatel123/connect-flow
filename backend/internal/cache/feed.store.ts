@@ -14,6 +14,11 @@ export class FeedStore {
     console.log("   💾 [REDIS] ZREVRANGE feed:", userId, "range:", start, "-", end);
     return redis.zrevrange(this.feedKey(userId), start, end);
   }
+
+  async clearFeed(userId: string) {
+    console.log("   💾 [REDIS] DEL feed:", userId);
+    await redis.del(this.feedKey(userId));
+  }
 }
 
 export const feedStore = new FeedStore();

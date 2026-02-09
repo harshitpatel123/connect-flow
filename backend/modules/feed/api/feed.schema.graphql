@@ -19,3 +19,7 @@ type User {
 type Query {
   myFeed: [Post!]!
 }
+
+type Mutation {
+  regenerateFeed: [Post!]!
+}

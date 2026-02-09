@@ -18,3 +18,22 @@ export const MY_FEED = gql`
     }
   }
 `;
+
+export const REGENERATE_FEED = gql`
+  mutation RegenerateFeed {
+    regenerateFeed {
+      id
+      content
+      createdAt
+      likeCount
+      commentCount
+      viewCount
+      isLiked
+      categoryTags
+      user {
+        id
+        email
+      }
+    }
+  }
+`;

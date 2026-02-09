@@ -27,6 +27,13 @@ export class PostRepository {
     });
   }
 
+  async findRecent(limit: number) {
+    return this.prisma.post.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit
+    });
+  }
+
   async getPostLikes(postId: string) {
     return this.prisma.postLike.findMany({
       where: { postId },

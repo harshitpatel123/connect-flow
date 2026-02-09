@@ -6,5 +6,5 @@ import { InteractionService } from "modules/interaction/interaction.service";
 
 export const authService = new AuthService(prisma);
 export const postService = new PostService(prisma);
-export const feedService = new FeedService();
+export const feedService = new FeedService(prisma);
 export const interactionService = new InteractionService(prisma);

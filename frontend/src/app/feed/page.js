@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLazyQuery } from '@apollo/client/react';
+import { useLazyQuery, useMutation } from '@apollo/client/react';
 import { auth } from '@/lib/auth';
 import Header from '@/components/Header';
 import PostCard from '@/components/PostCard';
-import { MY_FEED } from '@/graphql/feed.api';
+import { MY_FEED, REGENERATE_FEED } from '@/graphql/feed.api';
 import toast from 'react-hot-toast';
 
 export default function FeedPage() {
@@ -14,6 +14,7 @@ export default function FeedPage() {
   const [posts, setPosts] = useState([]);
 
   const [myFeed, { loading }] = useLazyQuery(MY_FEED, { fetchPolicy: 'no-cache' });
+  const [regenerateFeed, { loading: regenerating }] = useMutation(REGENERATE_FEED);
 
   const loadFeed = async () => {
     try {
@@ -21,6 +22,17 @@ export default function FeedPage() {
       setPosts(data?.myFeed || []);
     } catch (error) {
       toast.error(error.message || 'Failed to load feed');
+    }
+  };
+
+  const handleRegenerateFeed = async () => {
+    try {
+      toast.loading('Regenerating your personalized feed...', { id: 'regenerate' });
+      const { data } = await regenerateFeed();
+      setPosts(data?.regenerateFeed || []);
+      toast.success('Feed regenerated with fresh content!', { id: 'regenerate' });
+    } catch (error) {
+      toast.error(error.message || 'Failed to regenerate feed', { id: 'regenerate' });
     }
   };
 
@@ -37,26 +49,45 @@ export default function FeedPage() {
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 pt-6">
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={loadFeed}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
-          >
-            <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh Feed
-          </button>
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-white">
+            <h1 className="text-2xl font-bold">Your Personalized Feed</h1>
+            <p className="text-gray-400 text-sm mt-1">Content tailored to your interests</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={loadFeed}
+              disabled={loading || regenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm border border-white/20"
+            >
+              <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+            <button
+              onClick={handleRegenerateFeed}
+              disabled={loading || regenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            >
+              <svg className={`w-5 h-5 ${regenerating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Regenerate Feed
+            </button>
+          </div>
         </div>
       </div>
 
-      {loading ? (
+      {(loading || regenerating) ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin h-10 w-10 text-white" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
+          <div className="text-center">
+            <svg className="animate-spin h-10 w-10 text-white mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-white text-lg">{regenerating ? 'Generating personalized feed...' : 'Loading...'}</p>
+          </div>
         </div>
       ) : posts.length === 0 ? (
         <div className="flex items-center justify-center py-20">
@@ -67,7 +98,7 @@ export default function FeedPage() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Your feed is empty</h3>
-            <p className="text-gray-400 mb-6">Posts from other users will appear here</p>
+            <p className="text-gray-400 mb-6">Start interacting with posts to build your personalized feed</p>
             <button
               onClick={() => router.push('/dashboard')}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"

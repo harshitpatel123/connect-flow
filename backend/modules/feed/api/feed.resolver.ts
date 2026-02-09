@@ -71,5 +71,34 @@ export const FeedResolver = {
       
       return postsWithCounts;
     }
+  },
+  Mutation: {
+    regenerateFeed: async (_: unknown, __: unknown, { user }: Context) => {
+      if (!user) throw new Error("Unauthorized");
+      
+      const postIds = await feedService.regenerateFeed(user.userId);
+      
+      if (postIds.length === 0) return [];
+      
+      const posts = await postService.getPostsByIds(postIds);
+      const userIds = [...new Set(posts.map(p => p.userId))];
+      const users = await authService.getUsersByIds(userIds);
+      const userMap = new Map(users.map(u => [u.id, u]));
+      
+      const postsWithCounts = await Promise.all(
+        posts.map(async (post) => {
+          const counts = await getPostCounts(post.id, post.likeCount, post.viewCount, post.commentCount);
+          const isLiked = await checkIsLiked(user.userId, post.id);
+          return {
+            ...post,
+            ...counts,
+            isLiked,
+            user: userMap.get(post.userId)
+          };
+        })
+      );
+      
+      return postsWithCounts;
+    }
   }
 };

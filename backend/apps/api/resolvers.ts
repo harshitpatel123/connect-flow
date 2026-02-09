@@ -13,6 +13,7 @@ export const resolvers = {
   Mutation: {
     ...AuthResolver.Mutation,
     ...PostResolver.Mutation,
-    ...InteractionResolver.Mutation
+    ...InteractionResolver.Mutation,
+    ...FeedResolver.Mutation
   }
 };
