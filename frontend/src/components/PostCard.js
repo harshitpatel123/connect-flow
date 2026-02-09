@@ -108,7 +108,7 @@ export default function PostCard({ post, onUpdate }) {
       <div className="p-6">
         {/* User Info */}
         <div className="flex items-center space-x-3 mb-6">
-          <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="h-12 w-12 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-lg">
               {post.user?.email?.charAt(0).toUpperCase()}
             </span>
@@ -122,7 +122,7 @@ export default function PostCard({ post, onUpdate }) {
         </div>
 
         {/* Post Content */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 min-h-[400px] flex items-center justify-center mb-4">
+        <div className="bg-linear-to-br from-gray-50 to-gray-100 rounded-2xl p-8 min-h-[400px] flex items-center justify-center mb-4">
           <p className="text-gray-900 text-xl leading-relaxed whitespace-pre-wrap text-center">
             {post.content}
           </p>
@@ -228,7 +228,7 @@ export default function PostCard({ post, onUpdate }) {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {likes.map((like) => (
                 <div key={like.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
-                  <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="h-8 w-8 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
                       {like.user?.email?.charAt(0).toUpperCase()}
                     </span>
@@ -281,7 +281,7 @@ export default function PostCard({ post, onUpdate }) {
                 <>
                   {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
                     <div key={comment.id} className="flex items-start gap-3">
-                      <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="h-8 w-8 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-bold text-sm">
                           {comment.user?.email?.charAt(0).toUpperCase()}
                         </span>

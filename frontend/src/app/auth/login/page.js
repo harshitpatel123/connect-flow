@@ -33,12 +33,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white/95 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/20">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-4">
-              <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl hover:scale-105 transition-transform">
+              <div className="p-3 bg-linear-to-br from-indigo-500 to-purple-600 rounded-2xl hover:scale-105 transition-transform">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>

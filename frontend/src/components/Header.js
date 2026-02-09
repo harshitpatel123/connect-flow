@@ -20,7 +20,7 @@ export default function Header() {
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="h-10 w-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>

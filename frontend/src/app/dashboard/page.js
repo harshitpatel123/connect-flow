@@ -102,7 +102,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       <Header />
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           {currentUser && (
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
               <div className="flex items-center space-x-4">
-                <div className="h-16 w-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="h-16 w-16 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-2xl">{currentUser.email?.charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-600">Total Posts</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{posts.length}</p>
                 </div>
-                <div className="h-14 w-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="h-14 w-14 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-600">Total Likes</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{totalLikes}</p>
                 </div>
-                <div className="h-14 w-14 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                <div className="h-14 w-14 bg-linear-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-600">Total Comments</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{totalComments}</p>
                 </div>
-                <div className="h-14 w-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <div className="h-14 w-14 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
@@ -300,7 +300,7 @@ export default function DashboardPage() {
               ) : (
                 likes.map((like) => (
                   <div key={like.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold">
                         {like.user?.email?.charAt(0).toUpperCase()}
                       </span>
@@ -336,7 +336,7 @@ export default function DashboardPage() {
                 comments.map((comment) => (
                   <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="h-10 w-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-bold">
                           {comment.user?.email?.charAt(0).toUpperCase()}
                         </span>
