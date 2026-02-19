@@ -179,16 +179,47 @@ const childSpan = tracer.startSpan('auth-login', {
 
 ## 📝 Migration Phases
 
-### **Phase 1: Infrastructure Setup** (Week 1)
+### **Phase 1: Infrastructure & API Gateway Setup** (Week 1)
 ### **Phase 2: Service Extraction** (Week 2-3)
-### **Phase 3: API Gateway & Service Communication** (Week 4)
+### **Phase 3: Service Communication & Integration** (Week 4)
 ### **Phase 4: Data Migration & Synchronization** (Week 5)
 ### **Phase 5: Observability & Monitoring** (Week 6)
 ### **Phase 6: Production Deployment** (Week 7)
 
 ---
 
-## 🏗 Phase 1: Infrastructure Setup
+## 🎯 Communication Architecture
+
+**CRITICAL**: Understand the communication model:
+
+```
+Client (Frontend)
+    ↓ GraphQL
+API Gateway (GraphQL Server)
+    ↓ REST API
+Microservices (REST Endpoints)
+    ↓ Kafka Events
+Async Processing
+```
+
+**Rules**:
+- ✅ **API Gateway**: GraphQL ONLY (client-facing)
+- ✅ **Microservices**: REST API ONLY (internal communication)
+- ✅ **Async Events**: Kafka ONLY (event-driven)
+- ❌ **NO GraphQL in microservices**
+- ❌ **NO direct service-to-service GraphQL calls**
+
+---
+
+## 🏗 Phase 1: Infrastructure & API Gateway Setup
+
+**Goal**: Set up infrastructure and build API Gateway as the single entry point
+
+**Why API Gateway First?**
+- Establishes the GraphQL interface for frontend
+- Defines the contract before building services
+- Allows incremental service extraction
+- Services can be built to match Gateway's needs
 
 ### 1.1 Project Structure
 ```
@@ -214,11 +245,29 @@ connect-flow/
 ```
 
 ### 1.2 Service Template Structure
-Each service follows this structure:
+
+**API Gateway Structure** (GraphQL):
+```
+api-gateway/
+├── src/
+│   ├── graphql/
+│   │   ├── schema.ts       # GraphQL schema
+│   │   ├── resolvers/      # GraphQL resolvers
+│   │   └── context.ts      # Request context
+│   ├── services/           # REST clients for microservices
+│   ├── middleware/         # Auth, logging, tracing
+│   ├── config/             # Configuration
+│   └── server.ts           # Entry point
+├── Dockerfile
+├── package.json
+└── tsconfig.json
+```
+
+**Microservice Structure** (REST API):
 ```
 auth-service/
 ├── src/
-│   ├── api/                # REST/GraphQL endpoints
+│   ├── api/                # REST endpoints ONLY
 │   ├── application/        # Use cases
 │   ├── domain/             # Entities & types
 │   ├── infrastructure/     # Repositories, external services
@@ -342,9 +391,87 @@ volumes:
   kafka-data:
 ```
 
+### 1.4 Build API Gateway
+
+**Responsibilities**:
+- Expose GraphQL API to frontend
+- Route requests to microservices via REST
+- Handle authentication (JWT validation)
+- Aggregate responses from multiple services
+- Implement request tracing
+
+**GraphQL Schema** (`api-gateway/src/graphql/schema.ts`):
+```graphql
+type User {
+  id: ID!
+  email: String!
+  createdAt: String!
+}
+
+type Post {
+  id: ID!
+  userId: ID!
+  content: String!
+  likeCount: Int!
+  commentCount: Int!
+  viewCount: String!
+  categoryTags: [String!]!
+  createdAt: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type Query {
+  me: User!
+  post(id: ID!): Post
+  userPosts(userId: ID!): [Post!]!
+  feed(limit: Int, offset: Int): [Post!]!
+}
+
+type Mutation {
+  register(email: String!, password: String!): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+  createPost(content: String!, categoryTags: [String!]!): Post!
+  likePost(postId: ID!): Boolean!
+  unlikePost(postId: ID!): Boolean!
+}
+```
+
+**Environment Variables**:
+```env
+PORT=4000
+JWT_SECRET=your_jwt_secret
+CONSUL_HOST=localhost
+CONSUL_PORT=8500
+JAEGER_ENDPOINT=http://localhost:14268/api/traces
+
+# Service URLs (will be replaced by Consul discovery)
+AUTH_SERVICE_URL=http://localhost:3001
+POST_SERVICE_URL=http://localhost:3002
+INTERACTION_SERVICE_URL=http://localhost:3003
+FEED_SERVICE_URL=http://localhost:3004
+```
+
+**Key Files to Create**:
+1. `src/server.ts` - Apollo Server setup
+2. `src/graphql/schema.ts` - GraphQL type definitions
+3. `src/graphql/resolvers/` - Resolver functions
+4. `src/services/authClient.ts` - REST client for Auth Service
+5. `src/services/postClient.ts` - REST client for Post Service
+6. `src/middleware/auth.ts` - JWT validation
+7. `src/config/consul.ts` - Service discovery
+8. `src/config/jaeger.ts` - Distributed tracing
+
 ---
 
 ## 🔧 Phase 2: Service Extraction
+
+**Goal**: Extract services one by one, each exposing REST APIs
+
+**Order**: Auth → Post → Interaction → Feed
 
 ### 2.1 Auth Service
 
@@ -367,11 +494,11 @@ model User {
 }
 ```
 
-**API Endpoints**:
+**API Endpoints** (REST - Internal Only):
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login
-- `POST /auth/validate` - Token validation (internal)
-- `GET /auth/user/:id` - Get user by ID (internal)
+- `POST /auth/validate` - Token validation (called by Gateway)
+- `GET /auth/user/:id` - Get user by ID (called by Gateway)
 
 **Environment Variables**:
 ```env
@@ -413,11 +540,11 @@ model Post {
 }
 ```
 
-**API Endpoints**:
+**API Endpoints** (REST - Internal Only):
 - `POST /posts` - Create post
 - `GET /posts/:id` - Get post by ID
 - `GET /posts/user/:userId` - Get user posts
-- `POST /posts/batch` - Get posts by IDs (internal)
+- `POST /posts/batch` - Get posts by IDs (called by Gateway)
 
 **Events Published**:
 - `post-created` - When a new post is created
