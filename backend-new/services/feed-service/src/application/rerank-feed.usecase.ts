@@ -9,7 +9,7 @@ export class RerankFeedUseCase {
     private interactionClient: InteractionServiceClient
   ) {}
 
-  async execute(userId: string): Promise<void> {
+  async execute(userId: string, parentSpan?: any): Promise<void> {
     const currentFeedPostIds = await this.feedStore.getFeed(userId, 0, 49);
     if (currentFeedPostIds.length === 0) return;
 

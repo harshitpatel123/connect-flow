@@ -1,60 +1,62 @@
-.PHONY: help clean stop start restart status logs
+.PHONY: help start stop clean logs status
 
 help:
-	@echo "Connect Flow - Backend Infrastructure"
+	@echo "Connect Flow - Microservices Backend"
 	@echo ""
-	@echo "Available commands:"
-	@echo "  make start    - Start all infrastructure services"
-	@echo "  make stop     - Stop all services"
-	@echo "  make restart  - Restart all services"
-	@echo "  make clean    - Stop services and clean up (delete volumes)"
-	@echo "  make status   - Show status of all services"
-	@echo "  make logs     - Show logs from all services"
+	@echo "Commands:"
+	@echo "  make start   - Start all services"
+	@echo "  make stop    - Stop all services"
+	@echo "  make clean   - Stop and delete all data"
+	@echo "  make logs    - Show logs"
+	@echo "  make status  - Show service status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  API Gateway:  http://localhost:4000"
+	@echo "  Consul UI:    http://localhost:8500"
+	@echo "  Jaeger UI:    http://localhost:16686"
 
 start:
-	@echo "🛑 Stopping all Docker containers..."
+	@echo "🛑 Stopping old containers..."
 	@docker stop $$(docker ps -aq) 2>/dev/null || true
-	@cd infrastructure && docker-compose down 2>/dev/null || true
+	@docker-compose down 2>/dev/null || true
 	@echo "🔓 Releasing ports..."
-	@-lsof -ti:5432 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:5433 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:5434 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:6379 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:9092 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:8500 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:16686 | xargs -r sudo kill -9 2>/dev/null || true
-	@-lsof -ti:14268 | xargs -r sudo kill -9 2>/dev/null || true
-	@echo "🚀 Starting infrastructure services..."
-	@cd infrastructure && docker-compose up -d
-	@echo "⏳ Waiting for services to be healthy..."
-	@sleep 5
+	@-lsof -ti:4000 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5001 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5002 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5003 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5004 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5432 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5433 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:5434 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:6379 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:8500 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:9092 | xargs -r kill -9 2>/dev/null || true
+	@-lsof -ti:16686 | xargs -r kill -9 2>/dev/null || true
+	@echo "🚀 Starting all services..."
+	@docker-compose up -d --build
 	@echo ""
-	@echo "✅ Infrastructure started!"
+	@echo "✅ All services started!"
 	@echo ""
-	@echo "Services:"
-	@echo "  - Auth DB:        localhost:5432"
-	@echo "  - Post DB:        localhost:5433"
-	@echo "  - Interaction DB: localhost:5434"
-	@echo "  - Redis:          localhost:6379"
-	@echo "  - Kafka:          localhost:9092"
-	@echo "  - Consul UI:      http://localhost:8500"
-	@echo "  - Jaeger UI:      http://localhost:16686"
+	@echo "URLs:"
+	@echo "  API Gateway:  http://localhost:4000"
+	@echo "  Consul UI:    http://localhost:8500"
+	@echo "  Jaeger UI:    http://localhost:16686"
+	@echo ""
+	@echo "📡 Following API Gateway logs (Ctrl+C to exit)..."
+	@echo ""
+	@docker-compose logs -f api-gateway
 
 stop:
-	@echo "🛑 Stopping infrastructure services..."
-	@cd infrastructure && docker-compose down
-	@echo "✅ Services stopped"
+	@echo "🛑 Stopping all services..."
+	@docker-compose down
 
 clean:
-	@echo "🧹 Cleaning up containers and volumes..."
-	@cd infrastructure && docker-compose down -v
-	@echo "✅ Cleanup complete (all data deleted)"
-
-restart: start
-
-status:
-	@echo "📊 Service Status:"
-	@cd infrastructure && docker-compose ps
+	@echo "🧹 Cleaning up..."
+	@docker-compose down -v
+	@echo "✅ Cleanup complete"
 
 logs:
-	@cd infrastructure && docker-compose logs -f
+	@docker-compose logs -f
+
+status:
+	@docker-compose ps

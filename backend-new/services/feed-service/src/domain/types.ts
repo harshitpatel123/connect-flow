@@ -9,6 +9,9 @@ export interface Post {
   content: string;
   categoryTags: string[];
   createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
 }
 
 export interface UserInterest {

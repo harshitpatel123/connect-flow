@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PostLike, Comment, UserInterest } from '../domain/types.js';
+import { getServiceUrl } from '../config/consul.js';
+import axios from 'axios';
 
 export class InteractionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -9,10 +11,13 @@ export class InteractionRepository {
       data: { userId, postId, content }
     });
 
-    await this.prisma.post.update({
-      where: { id: postId },
-      data: { commentCount: { increment: 1 } }
-    });
+    // Increment comment count in post-service via HTTP
+    try {
+      const postServiceUrl = await getServiceUrl('post-service');
+      await axios.patch(`${postServiceUrl}/posts/${postId}/comment-count/increment`);
+    } catch (error) {
+      console.error('Failed to increment comment count:', error);
+    }
 
     return comment;
   }
@@ -86,5 +91,23 @@ export class InteractionRepository {
       where: { userId_category: { userId, category } }
     });
     return interest?.affinityScore || 0;
+  }
+
+  async getUserLikedPostIds(userId: string): Promise<string[]> {
+    const likes = await this.prisma.postLike.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { postId: true }
+    });
+    return [...new Set(likes.map(l => l.postId))];
+  }
+
+  async getUserCommentedPostIds(userId: string): Promise<string[]> {
+    const comments = await this.prisma.comment.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: { postId: true }
+    });
+    return [...new Set(comments.map(c => c.postId))];
   }
 }

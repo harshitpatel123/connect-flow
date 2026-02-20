@@ -80,23 +80,73 @@ router.get('/recent/:limit', async (req: Request, res: Response) => {
   }
 });
 
-// GET /posts/:postId/likes - Get post likes
+// GET /posts/:postId/likes - Get post likes (proxied to interaction-service)
 router.get('/:postId/likes', async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const likes = await postRepository.getPostLikes(postId);
-    res.status(200).json(likes);
+    // Likes are stored in interaction-service
+    res.status(501).json({ error: 'Use interaction-service /interactions/likes/:postId' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// GET /posts/:postId/comments - Get post comments
+// GET /posts/:postId/comments - Get post comments (proxied to interaction-service)
 router.get('/:postId/comments', async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const comments = await postRepository.getPostComments(postId);
-    res.status(200).json(comments);
+    // Comments are stored in interaction-service
+    res.status(501).json({ error: 'Use interaction-service /interactions/comments/:postId' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /posts/:id/view-count - Update view count (called by interaction service)
+router.patch('/:id/view-count', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { count } = req.body;
+    
+    await prisma.post.update({
+      where: { id },
+      data: { viewCount: BigInt(count) }
+    });
+    
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /posts/:id/comment-count/increment - Increment comment count
+router.patch('/:id/comment-count/increment', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    await prisma.post.update({
+      where: { id },
+      data: { commentCount: { increment: 1 } }
+    });
+    
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /posts/:id/like-count - Update like count (called by interaction service batch worker)
+router.patch('/:id/like-count', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { count } = req.body;
+    
+    await prisma.post.update({
+      where: { id },
+      data: { likeCount: count }
+    });
+    
+    res.status(200).json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

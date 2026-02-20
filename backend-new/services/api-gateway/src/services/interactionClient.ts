@@ -70,6 +70,15 @@ class InteractionClient {
       `${baseUrl}/interactions/history/${userId}`,
       { requestId } as any
     );
+    return response.data; // Returns { likedPostIds: string[], commentedPostIds: string[] }
+  }
+
+  async getUserInterests(userId: string, requestId?: string) {
+    const baseUrl = await this.getBaseUrl();
+    const response = await axiosInstance.get(
+      `${baseUrl}/interactions/interests/${userId}`,
+      { requestId } as any
+    );
     return response.data;
   }
 }

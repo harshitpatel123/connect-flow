@@ -10,7 +10,7 @@ export class RegenerateFeedUseCase {
     private interactionClient: InteractionServiceClient
   ) {}
 
-  async execute(userId: string): Promise<Post[]> {
+  async execute(userId: string, parentSpan?: any): Promise<Post[]> {
     const personalizedPostIds = await this.feedStore.getFeed(userId, 0, 14);
     
     const trendingPosts = await this.getTrendingPosts(userId, personalizedPostIds, 5);

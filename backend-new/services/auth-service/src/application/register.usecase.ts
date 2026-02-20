@@ -28,11 +28,7 @@ export class RegisterUseCase {
     });
 
     return {
-      accessToken: token,
-      user: {
-        id: user.id,
-        email: user.email
-      }
+      accessToken: token
     };
   }
 }

@@ -1,6 +1,8 @@
 import { redis } from './redis.client.js';
 import { prisma } from './prisma.client.js';
 import { seenStore } from './seen.store.js';
+import { getServiceUrl } from '../config/consul.js';
+import axios from 'axios';
 
 const BATCH_SIZE = 100;
 const INTERVAL_MS = 1000;
@@ -46,13 +48,18 @@ export class BatchWorker {
         }
       }
 
+      // Sync like counts to post-service
       const postIds = [...new Set(uniqueLikes.map(l => l.postId))];
       for (const postId of postIds) {
         const count = await redis.zscore('post:like:count', postId);
-        await prisma.post.update({
-          where: { id: postId },
-          data: { likeCount: count ? parseInt(count) : 0 }
-        });
+        try {
+          const postServiceUrl = await getServiceUrl('post-service');
+          await axios.patch(`${postServiceUrl}/posts/${postId}/like-count`, { 
+            count: count ? parseInt(count) : 0 
+          });
+        } catch (error) {
+          console.error('Failed to sync like count:', error);
+        }
       }
     } catch (error) {
       console.error('Batch worker error (likes):', error);
@@ -89,13 +96,18 @@ export class BatchWorker {
         }
       }
 
+      // Sync like counts to post-service
       const postIds = [...new Set(uniqueUnlikes.map(l => l.postId))];
       for (const postId of postIds) {
         const count = await redis.zscore('post:like:count', postId);
-        await prisma.post.update({
-          where: { id: postId },
-          data: { likeCount: count ? parseInt(count) : 0 }
-        });
+        try {
+          const postServiceUrl = await getServiceUrl('post-service');
+          await axios.patch(`${postServiceUrl}/posts/${postId}/like-count`, { 
+            count: count ? parseInt(count) : 0 
+          });
+        } catch (error) {
+          console.error('Failed to sync like count:', error);
+        }
       }
     } catch (error) {
       console.error('Batch worker error (unlikes):', error);
@@ -110,10 +122,12 @@ export class BatchWorker {
       const postIds = [...new Set(batch)];
       for (const postId of postIds) {
         const count = await seenStore.getViewCount(postId);
-        await prisma.post.update({
-          where: { id: postId },
-          data: { viewCount: BigInt(count) }
-        });
+        try {
+          const postServiceUrl = await getServiceUrl('post-service');
+          await axios.patch(`${postServiceUrl}/posts/${postId}/view-count`, { count });
+        } catch (error) {
+          console.error('Failed to update view count:', error);
+        }
       }
     } catch (error) {
       console.error('Batch worker error (views):', error);

@@ -132,4 +132,24 @@ router.get('/interests/:userId/:category/affinity', async (req: Request, res: Re
   }
 });
 
+// GET /interactions/history/:userId - Get user interaction history
+router.get('/history/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    
+    // Get liked and commented post IDs
+    const [likedPostIds, commentedPostIds] = await Promise.all([
+      repository.getUserLikedPostIds(userId),
+      repository.getUserCommentedPostIds(userId)
+    ]);
+    
+    res.status(200).json({
+      likedPostIds,
+      commentedPostIds
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

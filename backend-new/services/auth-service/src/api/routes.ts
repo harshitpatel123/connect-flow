@@ -61,8 +61,7 @@ router.get('/user/:id', async (req: Request, res: Response) => {
     }
     res.status(200).json({
       id: user.id,
-      email: user.email,
-      createdAt: user.createdAt.toISOString()
+      email: user.email
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -79,8 +78,7 @@ router.post('/users/batch', async (req: Request, res: Response) => {
     const users = await userRepository.findByIds(ids);
     res.status(200).json(users.map(u => ({
       id: u.id,
-      email: u.email,
-      createdAt: u.createdAt.toISOString()
+      email: u.email
     })));
   } catch (error: any) {
     res.status(500).json({ error: error.message });

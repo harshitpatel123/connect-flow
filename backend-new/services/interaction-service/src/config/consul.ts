@@ -35,8 +35,8 @@ export async function deregisterService() {
 
 export async function getServiceUrl(serviceName: string): Promise<string> {
   try {
-    const services = await consul.health.service({ service: serviceName, passing: true });
-    if (services.length === 0) {
+    const services: any = await consul.health.service({ service: serviceName, passing: true });
+    if (!services || services.length === 0) {
       throw new Error(`No healthy instances of ${serviceName} found`);
     }
     const service = services[0].Service;

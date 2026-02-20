@@ -37,16 +37,14 @@ export class PostRepository {
   }
 
   async getPostLikes(postId: string) {
-    return this.prisma.postLike.findMany({
-      where: { postId },
-      orderBy: { createdAt: 'desc' }
-    });
+    // PostLikes are in interaction-service DB, not here
+    // This should be called via HTTP to interaction-service
+    return [];
   }
 
   async getPostComments(postId: string) {
-    return this.prisma.comment.findMany({
-      where: { postId },
-      orderBy: { createdAt: 'desc' }
-    });
+    // Comments are in interaction-service DB, not here
+    // This should be called via HTTP to interaction-service
+    return [];
   }
 }

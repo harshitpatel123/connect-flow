@@ -2,6 +2,7 @@ import { authClient } from '../services/authClient';
 import { postClient } from '../services/postClient';
 import { interactionClient } from '../services/interactionClient';
 import { feedClient } from '../services/feedClient';
+import { enrichPosts } from '../services/postEnricher';
 
 export const resolvers = {
   Query: {
@@ -18,11 +19,13 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
-      return postClient.getMyPosts(context.userId, context.requestId);
+      const posts = await postClient.getMyPosts(context.userId, context.requestId);
+      return enrichPosts(posts, context.userId);
     },
 
     postsByIds: async (_: any, { ids }: { ids: string[] }, context: any) => {
-      return postClient.getPostsByIds(ids, context.requestId);
+      const posts = await postClient.getPostsByIds(ids, context.requestId);
+      return enrichPosts(posts, context.userId);
     },
 
     // Feed Queries
@@ -30,7 +33,8 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
-      return feedClient.getMyFeed(context.userId, context.requestId);
+      const posts = await feedClient.getMyFeed(context.userId, context.requestId);
+      return enrichPosts(posts, context.userId);
     },
 
     // Interaction Queries
@@ -46,7 +50,22 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
-      return interactionClient.getMyInteractionHistory(context.userId, context.requestId);
+      
+      // Get liked and commented post IDs from interaction service
+      const history = await interactionClient.getMyInteractionHistory(context.userId, context.requestId);
+      const { likedPostIds, commentedPostIds } = history;
+      
+      // Fetch posts for both lists
+      const [likedPosts, commentedPosts] = await Promise.all([
+        likedPostIds.length > 0 ? postClient.getPostsByIds(likedPostIds, context.requestId) : [],
+        commentedPostIds.length > 0 ? postClient.getPostsByIds(commentedPostIds, context.requestId) : []
+      ]);
+      
+      // Enrich both lists
+      return {
+        likedPosts: await enrichPosts(likedPosts, context.userId),
+        commentedPosts: await enrichPosts(commentedPosts, context.userId)
+      };
     },
   },
 
@@ -65,7 +84,9 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
-      return postClient.createPost(context.userId, content, categoryTags || [], context.requestId);
+      const post = await postClient.createPost(context.userId, content, categoryTags || [], context.requestId);
+      const enriched = await enrichPosts([post], context.userId);
+      return enriched[0];
     },
 
     // Interaction Mutations
@@ -102,7 +123,8 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
-      return feedClient.regenerateFeed(context.userId, context.requestId);
+      const posts = await feedClient.regenerateFeed(context.userId, context.requestId);
+      return enrichPosts(posts, context.userId);
     },
   },
 };

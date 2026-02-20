@@ -44,6 +44,16 @@ class AuthClient {
     );
     return response.data;
   }
+
+  async getUsersByIds(userIds: string[], requestId?: string) {
+    const baseUrl = await this.getBaseUrl();
+    const response = await axiosInstance.post(
+      `${baseUrl}/auth/users/batch`,
+      { ids: userIds },
+      { requestId } as any
+    );
+    return response.data;
+  }
 }
 
 export const authClient = new AuthClient();

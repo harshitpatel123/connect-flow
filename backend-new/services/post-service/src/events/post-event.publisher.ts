@@ -10,7 +10,10 @@ export class PostEventPublisher {
 
     await producer.send({
       topic: 'post-created',
-      messages: [{ value: JSON.stringify(fullEvent) }]
+      messages: [{ 
+        key: event.postId,
+        value: JSON.stringify(fullEvent) 
+      }]
     });
 
     console.log('✅ Published post-created event:', event.postId);
