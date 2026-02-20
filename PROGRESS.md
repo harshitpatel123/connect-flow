@@ -33,12 +33,12 @@
 - ✅ Health check
 
 ### Post Service (Port 5002)
-- ❌ REST API endpoints
-- ❌ Post CRUD operations
-- ❌ Database schema
-- ❌ Kafka producer (post-created)
-- ❌ Consul registration
-- ❌ Health check
+- ✅ REST API endpoints
+- ✅ Post CRUD operations
+- ✅ Database schema
+- ✅ Kafka producer (post-created)
+- ✅ Consul registration
+- ✅ Health check
 
 ### Interaction Service (Port 5003)
 - ❌ REST API endpoints
