@@ -6,9 +6,10 @@ const kafka = new Kafka({
 });
 
 export const producer = kafka.producer();
-export const consumer = kafka.consumer({ groupId: 'interaction-group' });
+export const consumer = kafka.consumer({ groupId: 'interest-group' });
 
 export async function connectKafka() {
   await producer.connect();
-  console.log('✅ Kafka producer connected');
+  await consumer.connect();
+  console.log('✅ Kafka producer and consumer connected');
 }

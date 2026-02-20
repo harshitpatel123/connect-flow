@@ -6,9 +6,9 @@ const consul = new Consul({
   promisify: true
 });
 
-const SERVICE_NAME = process.env.SERVICE_NAME || 'interaction-service';
-const SERVICE_ID = process.env.SERVICE_ID || 'interaction-service-1';
-const SERVICE_PORT = parseInt(process.env.PORT || '5003');
+const SERVICE_NAME = process.env.SERVICE_NAME || 'feed-service';
+const SERVICE_ID = process.env.SERVICE_ID || 'feed-service-1';
+const SERVICE_PORT = parseInt(process.env.PORT || '5004');
 
 export async function registerService() {
   try {
@@ -43,8 +43,11 @@ export async function getServiceUrl(serviceName: string): Promise<string> {
     return `http://${service.Address}:${service.Port}`;
   } catch (error) {
     console.warn(`⚠️  Consul lookup failed for ${serviceName}, using fallback`);
+    // Fallback to environment variables
     const fallbackUrls: Record<string, string> = {
-      'post-service': process.env.POST_SERVICE_URL || 'http://localhost:5002'
+      'post-service': process.env.POST_SERVICE_URL || 'http://localhost:5002',
+      'interaction-service': process.env.INTERACTION_SERVICE_URL || 'http://localhost:5003',
+      'auth-service': process.env.AUTH_SERVICE_URL || 'http://localhost:5001'
     };
     return fallbackUrls[serviceName] || `http://localhost:5000`;
   }

@@ -28,4 +28,25 @@ export class PostRepository {
       where: { id: { in: ids } }
     });
   }
+
+  async findRecent(limit: number): Promise<Post[]> {
+    return this.prisma.post.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit
+    });
+  }
+
+  async getPostLikes(postId: string) {
+    return this.prisma.postLike.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async getPostComments(postId: string) {
+    return this.prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
 }

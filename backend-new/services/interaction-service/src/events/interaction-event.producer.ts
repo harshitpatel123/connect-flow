@@ -28,4 +28,11 @@ export class InteractionEventProducer {
       messages: [{ value: JSON.stringify({ userId, postId }) }]
     });
   }
+
+  async postViewed(userId: string, postId: string) {
+    await producer.send({
+      topic: 'post-viewed',
+      messages: [{ value: JSON.stringify({ userId, postId }) }]
+    });
+  }
 }

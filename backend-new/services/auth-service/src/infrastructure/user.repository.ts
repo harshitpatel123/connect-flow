@@ -27,4 +27,14 @@ export class UserRepository {
       where: { id: { in: ids } }
     });
   }
+
+  async findAllExcept(userId: string): Promise<{ id: string }[]> {
+    return this.prisma.user.findMany({
+      where: {
+        id: { not: userId },
+        isActive: true
+      },
+      select: { id: true }
+    });
+  }
 }

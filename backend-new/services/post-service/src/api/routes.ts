@@ -69,4 +69,37 @@ router.post('/batch', async (req: Request, res: Response) => {
   }
 });
 
+// GET /posts/recent/:limit - Get recent posts
+router.get('/recent/:limit', async (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.params.limit);
+    const posts = await postRepository.findRecent(limit);
+    res.status(200).json(posts);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /posts/:postId/likes - Get post likes
+router.get('/:postId/likes', async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const likes = await postRepository.getPostLikes(postId);
+    res.status(200).json(likes);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /posts/:postId/comments - Get post comments
+router.get('/:postId/comments', async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const comments = await postRepository.getPostComments(postId);
+    res.status(200).json(comments);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

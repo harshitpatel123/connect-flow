@@ -5,9 +5,16 @@ export class InteractionRepository {
   constructor(private prisma: PrismaClient) {}
 
   async createComment(userId: string, postId: string, content: string): Promise<Comment> {
-    return this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: { userId, postId, content }
     });
+
+    await this.prisma.post.update({
+      where: { id: postId },
+      data: { commentCount: { increment: 1 } }
+    });
+
+    return comment;
   }
 
   async getPostLikes(postId: string): Promise<PostLike[]> {
@@ -30,9 +37,10 @@ export class InteractionRepository {
     });
 
     if (existing) {
+      const newScore = Math.max(0, existing.affinityScore + scoreChange);
       return this.prisma.userInterest.update({
         where: { userId_category: { userId, category } },
-        data: { affinityScore: existing.affinityScore + scoreChange }
+        data: { affinityScore: newScore }
       });
     }
 
@@ -43,7 +51,40 @@ export class InteractionRepository {
 
   async getUserInterests(userId: string): Promise<UserInterest[]> {
     return this.prisma.userInterest.findMany({
-      where: { userId }
+      where: { userId },
+      orderBy: { affinityScore: 'desc' }
     });
+  }
+
+  async getUsersWithMinScoreForCategories(categories: string[], minScore: number) {
+    const users = await this.prisma.userInterest.findMany({
+      where: {
+        category: { in: categories },
+        affinityScore: { gte: minScore }
+      },
+      select: {
+        userId: true,
+        category: true,
+        affinityScore: true
+      }
+    });
+
+    const userMap = new Map<string, number>();
+    users.forEach(u => {
+      const current = userMap.get(u.userId) || 0;
+      userMap.set(u.userId, Math.max(current, u.affinityScore));
+    });
+
+    return Array.from(userMap.entries()).map(([userId, maxAffinity]) => ({
+      userId,
+      maxAffinity
+    }));
+  }
+
+  async getUserCategoryAffinity(userId: string, category: string): Promise<number> {
+    const interest = await this.prisma.userInterest.findUnique({
+      where: { userId_category: { userId, category } }
+    });
+    return interest?.affinityScore || 0;
   }
 }
