@@ -25,12 +25,12 @@
 ## ⏳ Phase 2: Service Extraction (IN PROGRESS)
 
 ### Auth Service (Port 5001)
-- ❌ REST API endpoints
-- ❌ JWT token generation
-- ❌ Password hashing
-- ❌ Database schema
-- ❌ Consul registration
-- ❌ Health check
+- ✅ REST API endpoints
+- ✅ JWT token generation
+- ✅ Password hashing
+- ✅ Database schema
+- ✅ Consul registration
+- ✅ Health check
 
 ### Post Service (Port 5002)
 - ❌ REST API endpoints
