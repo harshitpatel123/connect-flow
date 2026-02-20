@@ -1,0 +1,93 @@
+import { Router, Request, Response } from 'express';
+import { LikePostUseCase } from '../application/like-post.usecase.js';
+import { UnlikePostUseCase } from '../application/unlike-post.usecase.js';
+import { CommentPostUseCase } from '../application/comment-post.usecase.js';
+import { InteractionRepository } from '../infrastructure/interaction.repository.js';
+import { InteractionEventProducer } from '../events/interaction-event.producer.js';
+import { likeStore } from '../infrastructure/like.store.js';
+import { prisma } from '../infrastructure/prisma.client.js';
+
+const router = Router();
+
+const repository = new InteractionRepository(prisma);
+const eventProducer = new InteractionEventProducer();
+const likePostUseCase = new LikePostUseCase(likeStore, eventProducer);
+const unlikePostUseCase = new UnlikePostUseCase(likeStore, eventProducer);
+const commentPostUseCase = new CommentPostUseCase(repository, eventProducer);
+
+// POST /interactions/like
+router.post('/like', async (req: Request, res: Response) => {
+  try {
+    const { userId, postId } = req.body;
+    if (!userId || !postId) {
+      return res.status(400).json({ error: 'userId and postId are required' });
+    }
+    await likePostUseCase.execute(userId, postId);
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /interactions/unlike
+router.post('/unlike', async (req: Request, res: Response) => {
+  try {
+    const { userId, postId } = req.body;
+    if (!userId || !postId) {
+      return res.status(400).json({ error: 'userId and postId are required' });
+    }
+    await unlikePostUseCase.execute(userId, postId);
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /interactions/comment
+router.post('/comment', async (req: Request, res: Response) => {
+  try {
+    const { userId, postId, content } = req.body;
+    if (!userId || !postId || !content) {
+      return res.status(400).json({ error: 'userId, postId, and content are required' });
+    }
+    await commentPostUseCase.execute(userId, postId, content);
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /interactions/likes/:postId
+router.get('/likes/:postId', async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const likes = await repository.getPostLikes(postId);
+    res.status(200).json(likes);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /interactions/comments/:postId
+router.get('/comments/:postId', async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const comments = await repository.getPostComments(postId);
+    res.status(200).json(comments);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /interactions/interests/:userId
+router.get('/interests/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const interests = await repository.getUserInterests(userId);
+    res.status(200).json(interests);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;

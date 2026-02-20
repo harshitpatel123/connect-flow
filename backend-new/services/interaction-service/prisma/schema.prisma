@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, postId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([postId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model UserInterest {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  category      String
+  affinityScore Float    @map("affinity_score")
+  lastUpdated   DateTime @updatedAt @map("last_updated")
+
+  @@unique([userId, category])
+  @@index([userId])
+  @@map("user_interests")
+}
