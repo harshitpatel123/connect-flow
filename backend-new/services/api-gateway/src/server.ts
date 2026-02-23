@@ -10,6 +10,7 @@ import { registerService, deregisterService } from './config/consul';
 import { loggingMiddleware } from './middleware/logging';
 import { errorHandler } from './middleware/errorHandler';
 import { formatError } from './graphql/errorFormatter';
+import { globalRateLimiter, graphqlRateLimiter } from './middleware/rateLimiter';
 
 const PORT = process.env.PORT || 4000;
 
@@ -30,6 +31,7 @@ async function startServer() {
 
   // Middleware (order matters!)
   app.use(loggingMiddleware);  // First: Log all requests
+  app.use(globalRateLimiter);  // Second: Global rate limiting
   app.use(cors());
   app.use(express.json());
 
@@ -38,9 +40,10 @@ async function startServer() {
     res.status(200).json({ status: 'healthy', service: 'api-gateway' });
   });
 
-  // GraphQL endpoint
+  // GraphQL endpoint with operation-specific rate limiting
   app.use(
     '/graphql',
+    graphqlRateLimiter,  // GraphQL-specific rate limiting
     expressMiddleware(server, {
       context: async ({ req }) => createContext(req, tracer),
     })

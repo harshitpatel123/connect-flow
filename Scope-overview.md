@@ -229,11 +229,19 @@ Feed ranking uses a weighted scoring model: Score = (EngagementScore × Engageme
 - Redis-backed rate counters
 - Timeouts and circuit breaker enforcement
 
+### Circuit Breaker Pattern
+- Wraps all service-to-service calls (auth, post, interaction, feed)
+- States: CLOSED (normal) → OPEN (failing) → HALF_OPEN (testing recovery)
+- Configuration: 50% error threshold, 10 request volume, 30s reset timeout
+- Fallback strategies: cached data, empty responses, or 503 errors
+- Shared state via Redis for multi-instance coordination
+
 ### Concepts Covered
 - API Gateway pattern
 - Rate limiting strategies
-- Circuit breakers
+- Circuit breakers (opossum library)
 - Graceful degradation
+- Cascading failure prevention
 
 ---
 
@@ -274,6 +282,28 @@ Feed ranking uses a weighted scoring model: Score = (EngagementScore × Engageme
 - Resilience testing
 - Circuit breaker validation
 - Graceful degradation
+
+---
+
+## 12. Dead Letter Queue (DLQ) Module
+
+### Responsibilities
+- Capturing failed message processing
+- Storing unprocessable events for manual inspection
+- Enabling message reprocessing and recovery
+
+### Backend Design
+- DLQ topics: `post-created.dlq`, `post-liked.dlq`, `user-interests-updated.dlq`
+- Retry logic: 3 attempts with exponential backoff (5s, 30s, 5min)
+- Message metadata: original payload, error trace, retry count, timestamps
+- Storage: Kafka DLQ topics (7 days) + database archive for long-term
+- Reprocessing: Admin API endpoint for manual retry or automated monitoring
+
+### Concepts Covered
+- Message failure handling and recovery
+- Exponential backoff retry strategies
+- Event replay mechanisms
+- Operational debugging tools
 
 ---
 
