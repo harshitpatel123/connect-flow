@@ -12,13 +12,16 @@ const SERVICE_PORT = parseInt(process.env.PORT || '5003');
 
 export async function registerService() {
   try {
+    // In Docker, use container name; outside Docker, use localhost
+    const serviceAddress = process.env.SERVICE_ADDRESS || SERVICE_NAME;
+    
     await consul.agent.service.register({
       id: SERVICE_ID,
       name: SERVICE_NAME,
-      address: 'localhost',
+      address: serviceAddress,
       port: SERVICE_PORT,
       check: {
-        http: `http://localhost:${SERVICE_PORT}/health`,
+        http: `http://${serviceAddress}:${SERVICE_PORT}/health`,
         interval: '10s'
       }
     });

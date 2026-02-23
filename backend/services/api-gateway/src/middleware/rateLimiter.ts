@@ -47,7 +47,7 @@ export const globalRateLimiter = rateLimit({
   skip: skipHealthChecks,
   store: new RedisStore({
     // @ts-expect-error - Redis client type mismatch
-    client: redis,
+    sendCommand: (...args: any[]) => redis.call(...args),
     prefix: 'rl:global:',
   }),
 });
@@ -64,7 +64,7 @@ const mutationRateLimiter = rateLimit({
   skip: skipHealthChecks,
   store: new RedisStore({
     // @ts-expect-error - Redis client type mismatch
-    client: redis,
+    sendCommand: (...args: any[]) => redis.call(...args),
     prefix: 'rl:mutation:',
   }),
 });
@@ -81,7 +81,7 @@ const queryRateLimiter = rateLimit({
   skip: skipHealthChecks,
   store: new RedisStore({
     // @ts-expect-error - Redis client type mismatch
-    client: redis,
+    sendCommand: (...args: any[]) => redis.call(...args),
     prefix: 'rl:query:',
   }),
 });
