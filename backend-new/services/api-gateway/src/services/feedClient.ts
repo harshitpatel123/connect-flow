@@ -18,8 +18,8 @@ class FeedClient {
   async regenerateFeed(userId: string, requestId?: string) {
     const baseUrl = await this.getBaseUrl();
     const response = await axiosInstance.post(
-      `${baseUrl}/feed/regenerate`,
-      { userId },
+      `${baseUrl}/feed/${userId}/regenerate`,
+      {},
       { requestId } as any
     );
     return response.data;

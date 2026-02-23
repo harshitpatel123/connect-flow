@@ -61,8 +61,8 @@ async function getRedisCount(key: string, postId: string, fallback: number): Pro
 
 async function checkIsLiked(userId: string, postId: string): Promise<boolean> {
   try {
-    const exists = await redis.sismember(`likes:user:${userId}`, postId);
-    return exists === 1;
+    const exists = await redis.get(`like:${userId}:${postId}`);
+    return exists === '1';
   } catch (error) {
     console.error('Redis error checking isLiked:', error);
     return false;

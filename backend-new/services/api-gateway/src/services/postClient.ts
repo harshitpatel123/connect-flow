@@ -19,7 +19,7 @@ class PostClient {
   async getMyPosts(userId: string, requestId?: string) {
     const baseUrl = await this.getBaseUrl();
     const response = await axiosInstance.get(
-      `${baseUrl}/posts/my/${userId}`,
+      `${baseUrl}/posts/user/${userId}`,
       { requestId } as any
     );
     return response.data;
@@ -29,7 +29,7 @@ class PostClient {
     const baseUrl = await this.getBaseUrl();
     const response = await axiosInstance.post(
       `${baseUrl}/posts/batch`,
-      { postIds },
+      { ids: postIds },
       { requestId } as any
     );
     return response.data;

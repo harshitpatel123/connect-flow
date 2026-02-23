@@ -44,9 +44,9 @@ export async function getServiceUrl(serviceName: string): Promise<string> {
   } catch (error) {
     console.warn(`⚠️  Consul lookup failed for ${serviceName}, using fallback`);
     const fallbackUrls: Record<string, string> = {
-      'post-service': process.env.POST_SERVICE_URL || 'http://localhost:5002',
-      'interaction-service': process.env.INTERACTION_SERVICE_URL || 'http://localhost:5003',
-      'auth-service': process.env.AUTH_SERVICE_URL || 'http://localhost:5001'
+      'auth-service': process.env.AUTH_SERVICE_URL || 'http://auth-service:5001',
+      'post-service': process.env.POST_SERVICE_URL || 'http://post-service:5002',
+      'interaction-service': process.env.INTERACTION_SERVICE_URL || 'http://interaction-service:5003',
     };
     return fallbackUrls[serviceName] || `http://localhost:5000`;
   }

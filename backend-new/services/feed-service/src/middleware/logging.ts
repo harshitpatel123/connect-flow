@@ -16,6 +16,10 @@ export function loggingMiddleware(req: RequestWithId, res: Response, next: NextF
     const duration = Date.now() - start;
     const statusEmoji = res.statusCode >= 400 ? '❌' : '✅';
     console.log(`[FEED-SERVICE] [${req.requestId}] <-- ${req.method} ${req.originalUrl} - ${res.statusCode} ${statusEmoji} - ${duration}ms`);
+    
+    if (res.statusCode === 404) {
+      console.error(`[FEED-SERVICE] ❌ 404 Not Found: ${req.method} ${req.originalUrl} - Route does not exist`);
+    }
   });
 
   next();
