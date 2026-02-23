@@ -10,6 +10,7 @@ import { RerankFeedUseCase } from './application/rerank-feed.usecase.js';
 import { feedStore } from './infrastructure/feed.store.js';
 import { postServiceClient } from './clients/post-service.client.js';
 import { interactionServiceClient } from './clients/interaction-service.client.js';
+import { loggingMiddleware } from './middleware/logging.js';
 
 const PORT = process.env.PORT || 5004;
 
@@ -17,6 +18,7 @@ async function startServer() {
   const app = express();
 
   // Middleware
+  app.use(loggingMiddleware);
   app.use(cors());
   app.use(express.json());
 
@@ -43,7 +45,10 @@ async function startServer() {
 
   // Start server
   const server = app.listen(PORT, async () => {
+    const serviceAddress = process.env.SERVICE_ADDRESS || 'feed-service';
     console.log(`🚀 Feed Service running on port ${PORT}`);
+    console.log(`📍 Service URL: http://${serviceAddress}:${PORT}`);
+    console.log(`🏥 Health check: http://${serviceAddress}:${PORT}/health`);
     
     // Register with Consul
     try {

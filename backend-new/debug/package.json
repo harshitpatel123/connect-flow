@@ -1,0 +1,14 @@
+{
+  "name": "debug-utils",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "ioredis": "^5.9.2",
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.33",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

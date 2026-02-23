@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import authRoutes from './api/routes.js';
 import { registerService, deregisterService } from './config/consul.js';
+import { loggingMiddleware } from './middleware/logging.js';
 
 const PORT = process.env.PORT || 5001;
 
@@ -9,6 +10,7 @@ async function startServer() {
   const app = express();
 
   // Middleware
+  app.use(loggingMiddleware);
   app.use(cors());
   app.use(express.json());
 
@@ -22,7 +24,10 @@ async function startServer() {
 
   // Start server
   const server = app.listen(PORT, async () => {
+    const serviceAddress = process.env.SERVICE_ADDRESS || 'auth-service';
     console.log(`🚀 Auth Service running on port ${PORT}`);
+    console.log(`📍 Service URL: http://${serviceAddress}:${PORT}`);
+    console.log(`🏥 Health check: http://${serviceAddress}:${PORT}/health`);
     
     // Register with Consul
     try {

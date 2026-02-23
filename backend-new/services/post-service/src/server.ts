@@ -3,6 +3,7 @@ import cors from 'cors';
 import postRoutes from './api/routes.js';
 import { registerService, deregisterService } from './config/consul.js';
 import { connectProducer } from './events/kafka.client.js';
+import { loggingMiddleware } from './middleware/logging.js';
 
 const PORT = process.env.PORT || 5002;
 
@@ -10,6 +11,7 @@ async function startServer() {
   const app = express();
 
   // Middleware
+  app.use(loggingMiddleware);
   app.use(cors());
   app.use(express.json());
 
@@ -30,7 +32,10 @@ async function startServer() {
 
   // Start server
   const server = app.listen(PORT, async () => {
+    const serviceAddress = process.env.SERVICE_ADDRESS || 'post-service';
     console.log(`🚀 Post Service running on port ${PORT}`);
+    console.log(`📍 Service URL: http://${serviceAddress}:${PORT}`);
+    console.log(`🏥 Health check: http://${serviceAddress}:${PORT}/health`);
     
     // Register with Consul
     try {

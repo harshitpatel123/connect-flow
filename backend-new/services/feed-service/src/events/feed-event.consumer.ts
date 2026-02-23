@@ -18,14 +18,21 @@ export async function startFeedConsumer(
         const event = JSON.parse(message.value.toString());
         if (event.type !== 'PostCreated') return;
 
+        console.log(`[KAFKA] 📥 Received post-created: postId=${event.postId}`);
+
         const post = await postClient.getPostById(event.postId);
-        if (!post || !post.categoryTags || post.categoryTags.length === 0) return;
+        if (!post || !post.categoryTags || post.categoryTags.length === 0) {
+          console.log(`[KAFKA] ⚠️  Skipping post ${event.postId}: no categories`);
+          return;
+        }
 
         const MIN_AFFINITY_SCORE = 0;
         const qualifiedUsers = await interactionClient.getQualifiedUsers(
           post.categoryTags,
           MIN_AFFINITY_SCORE
         );
+
+        console.log(`[FEED] 📝 Adding post ${event.postId} to ${qualifiedUsers.length} user feeds`);
 
         for (const user of qualifiedUsers) {
           await buildFeedUseCase.execute(
@@ -35,6 +42,8 @@ export async function startFeedConsumer(
             post.categoryTags
           );
         }
+
+        console.log(`[FEED] ✅ Post ${event.postId} added to feeds successfully`);
       }
     });
 

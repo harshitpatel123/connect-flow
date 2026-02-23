@@ -9,11 +9,12 @@ export class LikePostUseCase {
 
   async execute(userId: string, postId: string): Promise<boolean> {
     await this.likeStore.addLike(userId, postId);
+    console.log(`[REDIS] ✅ Like added: user=${userId}, post=${postId}`);
     
     try {
       await this.eventProducer.postLiked(userId, postId);
     } catch (error) {
-      console.error('Failed to publish post-liked event:', error);
+      console.error('[KAFKA] ❌ Failed to publish post-liked event:', error);
     }
 
     return true;

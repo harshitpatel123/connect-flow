@@ -30,10 +30,12 @@ router.get('/:userId', async (req: Request, res: Response) => {
   
   try {
     const { userId } = req.params;
+    console.log(`[FEED-SERVICE] Getting feed for user: ${userId}`);
     const posts = await getFeedUseCase.execute(userId, rootSpan);
     rootSpan.setTag('posts.count', posts.length);
     res.status(200).json(posts);
   } catch (error: any) {
+    console.error(`[FEED-SERVICE] ❌ Get feed failed: ${error.message}`);
     rootSpan.setTag('error', true);
     rootSpan.log({ event: 'error', message: error.message });
     res.status(500).json({ error: error.message });
@@ -50,10 +52,12 @@ router.post('/:userId/regenerate', async (req: Request, res: Response) => {
   
   try {
     const { userId } = req.params;
+    console.log(`[FEED-SERVICE] Regenerating feed for user: ${userId}`);
     const posts = await regenerateFeedUseCase.execute(userId, rootSpan);
     rootSpan.setTag('posts.count', posts.length);
     res.status(200).json(posts);
   } catch (error: any) {
+    console.error(`[FEED-SERVICE] ❌ Regenerate feed failed: ${error.message}`);
     rootSpan.setTag('error', true);
     rootSpan.log({ event: 'error', message: error.message });
     res.status(500).json({ error: error.message });
@@ -70,9 +74,11 @@ router.post('/:userId/rerank', async (req: Request, res: Response) => {
   
   try {
     const { userId } = req.params;
+    console.log(`[FEED-SERVICE] Re-ranking feed for user: ${userId}`);
     await rerankFeedUseCase.execute(userId, rootSpan);
     res.status(200).json({ success: true });
   } catch (error: any) {
+    console.error(`[FEED-SERVICE] ❌ Rerank feed failed: ${error.message}`);
     rootSpan.setTag('error', true);
     rootSpan.log({ event: 'error', message: error.message });
     res.status(500).json({ error: error.message });

@@ -70,13 +70,15 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+      - "9094:9094"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -135,6 +137,7 @@ services:
       JWT_SECRET: your_jwt_secret_key_change_in_production
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+      SERVICE_ADDRESS: auth-service
     volumes:
       - ./services/auth-service/src:/app/src
       - ./services/auth-service/prisma:/app/prisma
@@ -158,6 +161,7 @@ services:
       KAFKA_BROKERS: kafka:9092
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+      SERVICE_ADDRESS: post-service
     volumes:
       - ./services/post-service/src:/app/src
       - ./services/post-service/prisma:/app/prisma
@@ -185,6 +189,7 @@ services:
       KAFKA_BROKERS: kafka:9092
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+      SERVICE_ADDRESS: interaction-service
     volumes:
       - ./services/interaction-service/src:/app/src
       - ./services/interaction-service/prisma:/app/prisma
@@ -213,6 +218,7 @@ services:
       KAFKA_BROKERS: kafka:9092
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+      SERVICE_ADDRESS: feed-service
       POST_SERVICE_URL: http://post-service:5002
       INTERACTION_SERVICE_URL: http://interaction-service:5003
     volumes:
@@ -244,6 +250,7 @@ services:
       REDIS_PORT: 6379
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+      SERVICE_ADDRESS: api-gateway
       AUTH_SERVICE_URL: http://auth-service:5001
       POST_SERVICE_URL: http://post-service:5002
       INTERACTION_SERVICE_URL: http://interaction-service:5003

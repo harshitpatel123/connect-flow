@@ -51,12 +51,14 @@ async function startServer() {
 
   // Start server
   const httpServer = app.listen(PORT, async () => {
+    const serviceAddress = process.env.SERVICE_ADDRESS || 'api-gateway';
     console.log(`🚀 API Gateway running at http://localhost:${PORT}/graphql`);
+    console.log(`📍 Service URL: http://${serviceAddress}:${PORT}`);
+    console.log(`🏥 Health check: http://${serviceAddress}:${PORT}/health`);
     
     // Register with Consul
     try {
       await registerService();
-      console.log('✅ Registered with Consul');
     } catch (error) {
       console.error('❌ Failed to register with Consul:', error);
     }

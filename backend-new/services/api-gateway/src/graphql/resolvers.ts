@@ -11,6 +11,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling auth-service: getUser(${context.userId})`);
       return authClient.getUserById(context.userId, context.requestId);
     },
 
@@ -19,11 +20,13 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling post-service: myPosts(${context.userId})`);
       const posts = await postClient.getMyPosts(context.userId, context.requestId);
       return enrichPosts(posts, context.userId);
     },
 
     postsByIds: async (_: any, { ids }: { ids: string[] }, context: any) => {
+      console.log(`[API-GATEWAY] Calling post-service: postsByIds([${ids.length} ids])`);
       const posts = await postClient.getPostsByIds(ids, context.requestId);
       return enrichPosts(posts, context.userId);
     },
@@ -33,16 +36,19 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling feed-service: myFeed(${context.userId})`);
       const posts = await feedClient.getMyFeed(context.userId, context.requestId);
       return enrichPosts(posts, context.userId);
     },
 
     // Interaction Queries
     postLikes: async (_: any, { postId }: { postId: string }, context: any) => {
+      console.log(`[API-GATEWAY] Calling interaction-service: postLikes(${postId})`);
       return interactionClient.getPostLikes(postId, context.requestId);
     },
 
     postComments: async (_: any, { postId }: { postId: string }, context: any) => {
+      console.log(`[API-GATEWAY] Calling interaction-service: postComments(${postId})`);
       return interactionClient.getPostComments(postId, context.requestId);
     },
 
@@ -51,17 +57,15 @@ export const resolvers = {
         throw new Error('Unauthorized');
       }
       
-      // Get liked and commented post IDs from interaction service
+      console.log(`[API-GATEWAY] Calling interaction-service: myInteractionHistory(${context.userId})`);
       const history = await interactionClient.getMyInteractionHistory(context.userId, context.requestId);
       const { likedPostIds, commentedPostIds } = history;
       
-      // Fetch posts for both lists
       const [likedPosts, commentedPosts] = await Promise.all([
         likedPostIds.length > 0 ? postClient.getPostsByIds(likedPostIds, context.requestId) : [],
         commentedPostIds.length > 0 ? postClient.getPostsByIds(commentedPostIds, context.requestId) : []
       ]);
       
-      // Enrich both lists
       return {
         likedPosts: await enrichPosts(likedPosts, context.userId),
         commentedPosts: await enrichPosts(commentedPosts, context.userId)
@@ -72,10 +76,12 @@ export const resolvers = {
   Mutation: {
     // Auth Mutations
     register: async (_: any, { email, password }: { email: string; password: string }, context: any) => {
+      console.log(`[API-GATEWAY] Calling auth-service: register(${email})`);
       return authClient.register(email, password, context.requestId);
     },
 
     login: async (_: any, { email, password }: { email: string; password: string }, context: any) => {
+      console.log(`[API-GATEWAY] Calling auth-service: login(${email})`);
       return authClient.login(email, password, context.requestId);
     },
 
@@ -84,6 +90,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling post-service: createPost(user=${context.userId})`);
       const post = await postClient.createPost(context.userId, content, categoryTags || [], context.requestId);
       const enriched = await enrichPosts([post], context.userId);
       return enriched[0];
@@ -94,6 +101,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling interaction-service: likePost(user=${context.userId}, post=${postId})`);
       return interactionClient.likePost(context.userId, postId, context.requestId);
     },
 
@@ -101,6 +109,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling interaction-service: unlikePost(user=${context.userId}, post=${postId})`);
       return interactionClient.unlikePost(context.userId, postId, context.requestId);
     },
 
@@ -108,6 +117,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling interaction-service: viewPost(user=${context.userId}, post=${postId})`);
       return interactionClient.viewPost(context.userId, postId, context.requestId);
     },
 
@@ -115,6 +125,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling interaction-service: commentPost(user=${context.userId}, post=${postId})`);
       return interactionClient.commentPost(context.userId, postId, content, context.requestId);
     },
 
@@ -123,6 +134,7 @@ export const resolvers = {
       if (!context.userId) {
         throw new Error('Unauthorized');
       }
+      console.log(`[API-GATEWAY] Calling feed-service: regenerateFeed(${context.userId})`);
       const posts = await feedClient.regenerateFeed(context.userId, context.requestId);
       return enrichPosts(posts, context.userId);
     },

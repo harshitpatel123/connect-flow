@@ -8,6 +8,7 @@ import { startInterestConsumer } from './events/interest-event.consumer.js';
 import { InteractionRepository } from './infrastructure/interaction.repository.js';
 import { InteractionEventProducer } from './events/interaction-event.producer.js';
 import { prisma } from './infrastructure/prisma.client.js';
+import { loggingMiddleware } from './middleware/logging.js';
 
 const PORT = process.env.PORT || 5003;
 
@@ -15,6 +16,7 @@ async function startServer() {
   const app = express();
 
   // Middleware
+  app.use(loggingMiddleware);
   app.use(cors());
   app.use(express.json());
 
@@ -43,7 +45,10 @@ async function startServer() {
 
   // Start server
   const server = app.listen(PORT, async () => {
+    const serviceAddress = process.env.SERVICE_ADDRESS || 'interaction-service';
     console.log(`🚀 Interaction Service running on port ${PORT}`);
+    console.log(`📍 Service URL: http://${serviceAddress}:${PORT}`);
+    console.log(`🏥 Health check: http://${serviceAddress}:${PORT}/health`);
     
     // Register with Consul
     try {

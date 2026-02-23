@@ -19,9 +19,11 @@ const loginUseCase = new LoginUseCase(userRepository, passwordService, jwtServic
 router.post('/register', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log(`[AUTH-SERVICE] Processing register for email: ${email}`);
     const result = await registerUseCase.execute(email, password);
     res.status(201).json(result);
   } catch (error: any) {
+    console.error(`[AUTH-SERVICE] ❌ Register failed: ${error.message}`);
     res.status(400).json({ error: error.message });
   }
 });
@@ -30,9 +32,11 @@ router.post('/register', async (req: Request, res: Response) => {
 router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log(`[AUTH-SERVICE] Processing login for email: ${email}`);
     const result = await loginUseCase.execute(email, password);
     res.status(200).json(result);
   } catch (error: any) {
+    console.error(`[AUTH-SERVICE] ❌ Login failed: ${error.message}`);
     res.status(401).json({ error: error.message });
   }
 });
@@ -47,6 +51,7 @@ router.post('/validate', async (req: Request, res: Response) => {
     const payload = jwtService.verifyToken(token);
     res.status(200).json(payload);
   } catch (error: any) {
+    console.error(`[AUTH-SERVICE] ❌ Token validation failed: ${error.message}`);
     res.status(401).json({ error: 'Invalid token' });
   }
 });
@@ -64,6 +69,7 @@ router.get('/user/:id', async (req: Request, res: Response) => {
       email: user.email
     });
   } catch (error: any) {
+    console.error(`[AUTH-SERVICE] ❌ Get user failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -81,6 +87,7 @@ router.post('/users/batch', async (req: Request, res: Response) => {
       email: u.email
     })));
   } catch (error: any) {
+    console.error(`[AUTH-SERVICE] ❌ Batch get users failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });

@@ -6,19 +6,16 @@ export interface RequestWithId extends Request {
 }
 
 export function loggingMiddleware(req: RequestWithId, res: Response, next: NextFunction) {
-  // Generate or extract request ID
   req.requestId = req.headers['x-request-id'] as string || uuidv4();
-  
-  // Add request ID to response headers
   res.setHeader('x-request-id', req.requestId);
   
   const start = Date.now();
-  console.log(`[API-GATEWAY] [${req.requestId}] --> ${req.method} ${req.originalUrl}`);
+  console.log(`[FEED-SERVICE] [${req.requestId}] --> ${req.method} ${req.originalUrl}`);
   
   res.on('finish', () => {
     const duration = Date.now() - start;
     const statusEmoji = res.statusCode >= 400 ? '❌' : '✅';
-    console.log(`[API-GATEWAY] [${req.requestId}] <-- ${req.method} ${req.originalUrl} - ${res.statusCode} ${statusEmoji} - ${duration}ms`);
+    console.log(`[FEED-SERVICE] [${req.requestId}] <-- ${req.method} ${req.originalUrl} - ${res.statusCode} ${statusEmoji} - ${duration}ms`);
   });
 
   next();

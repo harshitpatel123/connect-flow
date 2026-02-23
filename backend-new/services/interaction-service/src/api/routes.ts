@@ -25,9 +25,11 @@ router.post('/like', async (req: Request, res: Response) => {
     if (!userId || !postId) {
       return res.status(400).json({ error: 'userId and postId are required' });
     }
+    console.log(`[INTERACTION-SERVICE] User ${userId} liking post ${postId}`);
     await likePostUseCase.execute(userId, postId);
     res.status(200).json({ success: true });
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ Like post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -39,9 +41,11 @@ router.post('/unlike', async (req: Request, res: Response) => {
     if (!userId || !postId) {
       return res.status(400).json({ error: 'userId and postId are required' });
     }
+    console.log(`[INTERACTION-SERVICE] User ${userId} unliking post ${postId}`);
     await unlikePostUseCase.execute(userId, postId);
     res.status(200).json({ success: true });
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ Unlike post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -53,9 +57,11 @@ router.post('/comment', async (req: Request, res: Response) => {
     if (!userId || !postId || !content) {
       return res.status(400).json({ error: 'userId, postId, and content are required' });
     }
+    console.log(`[INTERACTION-SERVICE] User ${userId} commenting on post ${postId}`);
     await commentPostUseCase.execute(userId, postId, content);
     res.status(200).json({ success: true });
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ Comment post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -70,6 +76,7 @@ router.post('/view', async (req: Request, res: Response) => {
     const result = await viewPostUseCase.execute(userId, postId);
     res.status(200).json({ success: true, newView: result });
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ View post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -81,6 +88,7 @@ router.get('/likes/:postId', async (req: Request, res: Response) => {
     const likes = await repository.getPostLikes(postId);
     res.status(200).json(likes);
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ Get likes failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -92,6 +100,7 @@ router.get('/comments/:postId', async (req: Request, res: Response) => {
     const comments = await repository.getPostComments(postId);
     res.status(200).json(comments);
   } catch (error: any) {
+    console.error(`[INTERACTION-SERVICE] ❌ Get comments failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });

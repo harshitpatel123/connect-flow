@@ -12,13 +12,15 @@ const SERVICE_PORT = parseInt(process.env.PORT || '5002');
 
 export async function registerService() {
   try {
+    const serviceAddress = process.env.SERVICE_ADDRESS || SERVICE_NAME;
+    
     await consul.agent.service.register({
       id: SERVICE_ID,
       name: SERVICE_NAME,
-      address: 'localhost',
+      address: serviceAddress,
       port: SERVICE_PORT,
       check: {
-        http: `http://localhost:${SERVICE_PORT}/health`,
+        http: `http://${serviceAddress}:${SERVICE_PORT}/health`,
         interval: '10s'
       }
     });

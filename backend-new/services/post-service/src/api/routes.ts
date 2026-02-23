@@ -19,9 +19,11 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'userId and content are required' });
     }
 
+    console.log(`[POST-SERVICE] Creating post for user: ${userId}`);
     const post = await createPostUseCase.execute({ userId, content, categoryTags });
     res.status(201).json(post);
   } catch (error: any) {
+    console.error(`[POST-SERVICE] ❌ Create post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -38,6 +40,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     res.status(200).json(post);
   } catch (error: any) {
+    console.error(`[POST-SERVICE] ❌ Get post failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });
@@ -65,6 +68,7 @@ router.post('/batch', async (req: Request, res: Response) => {
     const posts = await postRepository.findByIds(ids);
     res.status(200).json(posts);
   } catch (error: any) {
+    console.error(`[POST-SERVICE] ❌ Batch get posts failed: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });

@@ -16,6 +16,6 @@ export class PostEventPublisher {
       }]
     });
 
-    console.log('✅ Published post-created event:', event.postId);
+    console.log(`[KAFKA] ✅ Published post-created event: postId=${event.postId}, userId=${event.userId}`);
   }
 }

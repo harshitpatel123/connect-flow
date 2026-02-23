@@ -9,7 +9,10 @@ export class BuildFeedUseCase {
 
   async execute(userId: string, postId: string, createdAt: number, categories: string[]): Promise<void> {
     const alreadySeen = await this.feedStore.hasSeen(userId, postId);
-    if (alreadySeen) return;
+    if (alreadySeen) {
+      console.log(`[REDIS] ⚠️  Post ${postId} already in feed for user ${userId}`);
+      return;
+    }
 
     const interests = await this.interactionClient.getUserInterests(userId);
     
@@ -26,5 +29,6 @@ export class BuildFeedUseCase {
     const score = (maxAffinity * 20) - (ageInHours * 5);
 
     await this.feedStore.addToFeed(userId, postId, score);
+    console.log(`[REDIS] ✅ Added post ${postId} to feed for user ${userId} (score: ${score.toFixed(2)})`);
   }
 }
