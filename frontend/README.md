@@ -151,7 +151,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 
 ## 🔗 Related Documentation
 
-- [Backend README](../backend-new/README.md) - Microservices setup
+- [Backend README](../backend/README.md) - Microservices setup
 - [Project Overview](../PROJECT-OVERVIEW.md) - Complete project documentation
 - [Scope Overview](../Scope-overview.md) - Architecture principles
 

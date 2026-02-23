@@ -1,33 +1,285 @@
 services:
-  kafka:
-    image: apache/kafka:3.7.0
-    container_name: kafka-service
-    ports:
-      - "9092:9092"
+  # ==================== INFRASTRUCTURE ====================
+  
+  auth-db:
+    image: postgres:15-alpine
+    container_name: auth-db
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      # Changed to a more standard data directory
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5432:5432"
     volumes:
-      - /home/logicrays/Desktop/connect-flow-data/kafka:/var/lib/kafka/data
-    restart: always
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  post-db:
+    image: postgres:15-alpine
+    container_name: post-db
+    environment:
+      POSTGRES_DB: post_db
+      POSTGRES_USER: post_user
+      POSTGRES_PASSWORD: post_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U post_user -d post_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  interaction-db:
+    image: postgres:15-alpine
+    container_name: interaction-db
+    environment:
+      POSTGRES_DB: interaction_db
+      POSTGRES_USER: interaction_user
+      POSTGRES_PASSWORD: interaction_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - interaction-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interaction_user -d interaction_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: redis-service
+    container_name: redis
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes
     volumes:
-      - /home/logicrays/Desktop/connect-flow-data/redis:/data
-    restart: always
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: :9411
+
+  # ==================== MICROSERVICES ====================
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: 5001
+      DATABASE_URL: postgresql://auth_user:auth_pass@auth-db:5432/auth_db
+      JWT_SECRET: your_jwt_secret_key_change_in_production
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: auth-service
+    volumes:
+      - ./services/auth-service/src:/app/src
+      - ./services/auth-service/prisma:/app/prisma
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    restart: unless-stopped
+
+  post-service:
+    build:
+      context: ./services/post-service
+      dockerfile: Dockerfile
+    container_name: post-service
+    ports:
+      - "5002:5002"
+    environment:
+      PORT: 5002
+      DATABASE_URL: postgresql://post_user:post_pass@post-db:5432/post_db
+      KAFKA_BROKERS: kafka:9092
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: post-service
+    volumes:
+      - ./services/post-service/src:/app/src
+      - ./services/post-service/prisma:/app/prisma
+    depends_on:
+      post-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    restart: unless-stopped
+
+  interaction-service:
+    build:
+      context: ./services/interaction-service
+      dockerfile: Dockerfile
+    container_name: interaction-service
+    ports:
+      - "5003:5003"
+    environment:
+      PORT: 5003
+      DATABASE_URL: postgresql://interaction_user:interaction_pass@interaction-db:5432/interaction_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: interaction-service
+    volumes:
+      - ./services/interaction-service/src:/app/src
+      - ./services/interaction-service/prisma:/app/prisma
+    depends_on:
+      interaction-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    restart: unless-stopped
+
+  feed-service:
+    build:
+      context: ./services/feed-service
+      dockerfile: Dockerfile
+    container_name: feed-service
+    ports:
+      - "5004:5004"
+    environment:
+      PORT: 5004
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: feed-service
+      POST_SERVICE_URL: http://post-service:5002
+      INTERACTION_SERVICE_URL: http://interaction-service:5003
+    volumes:
+      - ./services/feed-service/src:/app/src
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+      post-service:
+        condition: service_started
+      interaction-service:
+        condition: service_started
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      JWT_SECRET: your_jwt_secret_key_change_in_production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: api-gateway
+      AUTH_SERVICE_URL: http://auth-service:5001
+      POST_SERVICE_URL: http://post-service:5002
+      INTERACTION_SERVICE_URL: http://interaction-service:5003
+      FEED_SERVICE_URL: http://feed-service:5004
+      JAEGER_ENDPOINT: http://jaeger:14268/api/traces
+    volumes:
+      - ./services/api-gateway/src:/app/src
+    depends_on:
+      redis:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      post-service:
+        condition: service_started
+      interaction-service:
+        condition: service_started
+      feed-service:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  auth-db-data:
+  post-db-data:
+  interaction-db-data:
+  redis-data:
+  kafka-data:
+
+networks:
+  default:
+    name: connect-flow-network

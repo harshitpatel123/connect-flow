@@ -1,7 +1,4 @@
-import { redis } from "../internal/cache/redis.client";
-import { kafka } from "../internal/messaging/kafka.client";
-import { execSync } from "child_process";
-import { logFeedData } from "./feed-debugger";
+import { redis, kafka } from './clients.js';
 
 async function cleanupData() {
   console.log("\n" + "=".repeat(80));
@@ -29,27 +26,16 @@ async function cleanupData() {
     
     await admin.disconnect();
 
-    // Clean volume data
-    console.log("\n🗑️  [VOLUME] Cleaning volume data...");
-    try {
-      execSync("rm -rf /home/logicrays/Desktop/connect-flow-data/kafka/*", { stdio: "inherit" });
-      execSync("rm -rf /home/logicrays/Desktop/connect-flow-data/redis/*", { stdio: "inherit" });
-      console.log("✅ [VOLUME] Volume data cleared");
-    } catch (error) {
-      console.log("⚠️  [VOLUME] Could not clear volume data (may need sudo)");
-    }
-
     console.log("\n" + "=".repeat(80));
-    console.log("✅ [CLEANUP] Complete! All data cleared.");
-    console.log("⚠️  [CLEANUP] Restart Docker services: cd docker && docker compose restart");
+    console.log("✅ [CLEANUP] Complete! All cache and event data cleared.");
+    console.log("⚠️  [CLEANUP] Database data is preserved.");
+    console.log("⚠️  [CLEANUP] Restart services: make stop && make start");
     console.log("=".repeat(80) + "\n");
 
-    // Display current state
-    await logFeedData();
-
-  } catch (error) {
-    console.error("❌ [CLEANUP] Error:", error);
+  } catch (error: any) {
+    console.error("❌ [CLEANUP] Error:", error.message);
   } finally {
+    await redis.quit();
     process.exit(0);
   }
 }
