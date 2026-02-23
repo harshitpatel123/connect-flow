@@ -20,7 +20,7 @@ A **full-stack social media platform** demonstrating real-world backend engineer
 - **Intelligent Feed Personalization** - Three-model approach (Push, Pull, Re-rank)
 - **Production Patterns** - Rate limiting, caching, batch processing, service discovery
 
-> **Architecture Evolution**: Built first as a **Modular Monolith** ([`modular-monolith`](https://github.com/yourusername/connect-flow/tree/modular-monolith) branch), then migrated to **Microservices** ([`main`](https://github.com/yourusername/connect-flow) branch) to demonstrate real-world architectural transformation.
+> **Architecture Evolution**: Built first as a **Modular Monolith** ([`modular-monolith`](https://github.com/harshitpatel123/connect-flow/tree/modular-monolith) branch), then migrated to **Microservices** ([`main`](https://github.com/harshitpatel123/connect-flow) branch) to demonstrate real-world architectural transformation.
 
 ---
 
@@ -28,8 +28,8 @@ A **full-stack social media platform** demonstrating real-world backend engineer
 
 | Branch | Description | Status |
 |--------|-------------|--------|
-| [`main`](https://github.com/yourusername/connect-flow) | Microservices Architecture | ✅ Current |
-| [`modular-monolith`](https://github.com/yourusername/connect-flow/tree/modular-monolith) | Modular Monolith Architecture | 📦 Legacy |
+| [`main`](https://github.com/harshitpatel123/connect-flow) | Microservices Architecture | ✅ Current |
+| [`modular-monolith`](https://github.com/harshitpatel123/connect-flow/tree/modular-monolith) | Modular Monolith Architecture | 📦 Legacy |
 
 ---
 
