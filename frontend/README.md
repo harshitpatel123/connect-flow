@@ -1,76 +1,160 @@
 # ConnectFlow – Frontend
 
-This is the frontend application for **ConnectFlow**, built using **Next.js (App Router)** and **Apollo Client**.
+Minimal frontend for **ConnectFlow** built with **Next.js 14 (App Router)** and **Apollo Client**.
 
-The frontend is intentionally kept minimal and thin.  
-All business logic lives in the backend.
-
----
-
-## Tech Stack
-
-- Next.js (App Router)
-- Apollo Client
-- GraphQL
-- Plain CSS (for now)
+> All business logic lives in the backend. Frontend is intentionally thin.
 
 ---
 
-## Folder Structure
+## 🚀 Quick Start
 
+```bash
+# Install dependencies
+npm install
+
+# Set environment variable
+cp .env.example .env
+
+# Start development server
+npm run dev
+```
+
+Frontend runs on **http://localhost:3000**
+
+**Prerequisites:** Backend must be running on http://localhost:4000
+
+---
+
+## 🛠 Tech Stack
+
+- **Next.js 14** - App Router with React Server Components
+- **Apollo Client** - GraphQL client with caching
+- **Tailwind CSS** - Utility-first styling
+- **React Hot Toast** - Toast notifications
+- **React Select** - Multi-select for categories
+
+---
+
+## 📁 Folder Structure
+
+```
 src/
-├── app/ # Next.js routes
-│ ├── layout.js
-│ ├── globals.css
-│ ├── page.js
-│ ├── auth/
-│ │ ├── login/page.js
-│ │ └── signup/page.js
-│ └── post/
-│ ├── create/page.js
-│ └── page.js
+├── app/                    # Next.js App Router
+│   ├── auth/
+│   │   ├── login/         # Login page
+│   │   └── signup/        # Signup page
+│   ├── dashboard/         # User's posts
+│   ├── feed/              # Personalized feed
+│   ├── history/           # Interaction history
+│   ├── layout.js          # Root layout with Header
+│   ├── providers.js       # Apollo Provider
+│   └── page.js            # Landing page
 │
-├── components/ # Reusable UI components
+├── components/
+│   ├── Header.js          # Navigation with user email
+│   ├── PostCard.js        # Post display with like/comment
+│   └── CreatePostPopup.js # Post creation modal
 │
-├── graphql/ # GraphQL client & APIs
-│ ├── client.js # Apollo Client setup
-│ └── auth.api.js # Auth queries & mutations
+├── graphql/               # GraphQL operations
+│   ├── client.js          # Apollo Client setup
+│   ├── auth.api.js        # Login, signup
+│   ├── post.api.js        # Create post, get posts
+│   ├── feed.api.js        # Get feed, regenerate feed
+│   ├── interaction.api.js # Like, unlike, comment, view
+│   ├── history.api.js     # Interaction history
+│   └── user.api.js        # Get current user
 │
-├── hooks/ # Custom hooks (e.g. useAuth)
-├── lib/ # Helpers (tokens, constants)
-└── styles/
+├── constants/
+│   └── categories.js      # Post category options
+│
+└── lib/
+    └── auth.js            # Token management
+```
 
 
 ---
 
-## GraphQL Integration
+## 🔌 Architecture
 
-- Apollo Client is initialized in `src/graphql/client.js`
-- Each backend module maps to **one API file**
-  - `auth.api.js`
-  - `post.api.js` (future)
+```
+User Browser
+     ↓
+Next.js Frontend (Port 3000)
+     ↓ GraphQL over HTTP
+API Gateway (Port 4000)
+     ↓ REST
+Microservices (Auth, Post, Interaction, Feed)
+```
 
-UI components import GraphQL operations directly from these files.
+### GraphQL Integration
+- Apollo Client configured with auth link (JWT in headers)
+- Each backend module = one API file (auth.api.js, post.api.js, etc.)
+- Components use `useQuery` and `useMutation` hooks
+- Token stored in localStorage (auto-attached to requests)
 
 ---
 
-## Authentication Flow
+## 🔐 Authentication Flow
 
 1. User submits login/signup form
-2. Frontend calls GraphQL mutation
+2. Frontend calls GraphQL mutation (LOGIN/REGISTER)
 3. Backend returns `accessToken`
-4. Token is stored (localStorage for now)
-5. Apollo Client sends token in `Authorization` header
+4. Token stored in localStorage
+5. Apollo Client auto-attaches token to all requests
+6. Protected routes redirect to login if no token
 
 ---
 
-## Important Rules
+## ✨ Features
 
-- Frontend contains **no business logic**
-- Backend is the source of truth
-- UI is allowed to be simple and unpolished
-- Features are added only when backend support exists
+- ✅ **Authentication** - Login/signup with JWT
+- ✅ **Dashboard** - View your posts
+- ✅ **Personalized Feed** - Algorithm-ranked posts
+- ✅ **Create Posts** - Multi-category tagging
+- ✅ **Interactions** - Like, unlike, comment, view
+- ✅ **History** - View liked/commented posts
+- ✅ **User Display** - Email shown in header
+- ✅ **Toast Notifications** - Success/error feedback
+- ✅ **Responsive Design** - Tailwind CSS styling
 
 ---
 
-This README will be expanded as the project grows.
+## 🎯 Available Scripts
+
+```bash
+npm run dev      # Start development server (port 3000)
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
+
+---
+
+## 🌐 Environment Variables
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+**Note:** Must start with `NEXT_PUBLIC_` to be accessible in browser.
+
+---
+
+## 📝 Design Principles
+
+- **No business logic** - All logic in backend
+- **Thin client** - UI only handles display & user input
+- **Backend-driven** - Features added only when backend supports them
+- **Simple & functional** - Focus on functionality over polish
+
+---
+
+## 🔗 Related Documentation
+
+- [Backend README](../backend-new/README.md) - Microservices setup
+- [Project Overview](../PROJECT-OVERVIEW.md) - Complete project documentation
+- [Scope Overview](../Scope-overview.md) - Architecture principles
+
+---
+
+**Happy coding! 🚀**
