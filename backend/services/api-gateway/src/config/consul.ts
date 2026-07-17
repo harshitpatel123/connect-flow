@@ -23,7 +23,7 @@ export async function registerService() {
       port: SERVICE_PORT,
       check: {
         http: `http://${serviceAddress}:${SERVICE_PORT}/health`,
-        interval: '10s',
+        interval: '60s',
       },
     });
     console.log(`✅ Registered ${SERVICE_NAME} with Consul`);
