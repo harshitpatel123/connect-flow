@@ -1,5 +1,6 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
 
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/graphql",
@@ -15,7 +16,18 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  const isInvalidToken =
+    graphQLErrors?.some((e) => e.message === "Invalid token") ||
+    networkError?.result?.error === "Invalid token";
+
+  if (isInvalidToken && typeof window !== "undefined") {
+    localStorage.clear();
+    window.location.href = "/auth/login";
+  }
+});
+
 export const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: errorLink.concat(authLink).concat(httpLink),
   cache: new InMemoryCache(),
 });

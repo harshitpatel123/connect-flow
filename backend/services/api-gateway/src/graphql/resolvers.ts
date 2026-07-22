@@ -138,5 +138,11 @@ export const resolvers = {
       const posts = await feedClient.regenerateFeed(context.userId, context.requestId);
       return enrichPosts(posts, context.userId);
     },
+
+    // Dev Utils
+    hashPassword: async (_: any, { password }: { password: string }, context: any) => {
+      console.log(`[API-GATEWAY] Calling auth-service: hashPassword`);
+      return authClient.hashPassword(password, context.requestId);
+    },
   },
 };

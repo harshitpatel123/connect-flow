@@ -54,6 +54,15 @@ class AuthClient {
     );
     return response.data;
   }
+  async hashPassword(password: string, requestId?: string): Promise<string> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await axiosInstance.post(
+      `${baseUrl}/auth/hash-password`,
+      { password },
+      { requestId } as any
+    );
+    return response.data.hash;
+  }
 }
 
 export const authClient = new AuthClient();

@@ -96,5 +96,8 @@ export const typeDefs = `#graphql
     
     # Feed
     regenerateFeed: [Post!]!
+
+    # Dev Utils
+    hashPassword(password: String!): String!
   }
 `;

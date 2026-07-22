@@ -44,6 +44,7 @@ export async function getServiceUrl(serviceName: string): Promise<string> {
     'post-service': process.env.POST_SERVICE_URL || 'http://post-service:5002',
     'interaction-service': process.env.INTERACTION_SERVICE_URL || 'http://interaction-service:5003',
     'feed-service': process.env.FEED_SERVICE_URL || 'http://feed-service:5004',
+    'ai-chat-service': process.env.AI_CHAT_SERVICE_URL || 'http://ai-chat-service:5005',
   };
 
   try {

@@ -156,10 +156,11 @@ backend/
 
 ### Microservices Backend (Current - `main` branch)
 ```bash
-cd backend
+# From project root - terminal 1
+make backend
 
-# Start all services (auto-migration included)
-make start
+# From project root - terminal 2
+make frontend
 
 # View logs
 make logs
@@ -167,7 +168,8 @@ make logs
 # Open Prisma Studio
 make studio
 ```
-Backend runs on `http://localhost:4000/graphql`
+Backend runs on `http://localhost:4000/graphql`  
+Frontend runs on `http://localhost:3000`
 
 ### Modular Monolith Backend (Legacy - `modular-monolith` branch)
 ```bash
@@ -310,7 +312,7 @@ Interaction Service → user-interests-updated → Feed Service (re-rank)
 - Hot-reload for all services (2-3 second restart)
 - Debug utilities (view-redis.ts, view-kafka.ts, cleanup.ts)
 - Prisma Studio on ports 5555-5557
-- One-command setup (make start)
+- One-command setup (`make backend` / `make frontend`)
 - Comprehensive README documentation
 
 ---

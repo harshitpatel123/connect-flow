@@ -7,14 +7,16 @@ Production-grade microservices architecture with **event-driven design**, **dist
 ## 🚀 Quick Start
 
 ```bash
-make start    # Start all services with auto-migration
+make backend    # Start all backend services (from root)
+make frontend   # Start frontend - waits for backend to be ready (from root)
 ```
 
 Docker will automatically:
+- ✅ Kill conflicting ports
 - ✅ Build all service images
 - ✅ Start infrastructure (PostgreSQL, Redis, Kafka, Consul, Jaeger)
+- ✅ Wait for databases to be healthy
 - ✅ Run Prisma migrations for all databases
-- ✅ Generate Prisma clients
 - ✅ Start all microservices with hot-reload
 - ✅ Show API Gateway logs
 
@@ -24,9 +26,12 @@ Docker will automatically:
 
 ## 📊 Commands
 
+> All commands are run from the **root** of the project.
+
 | Command | Description |
 |---------|-------------|
-| `make start` | Start all services with auto-migration |
+| `make backend` | Start all backend services with auto-migration |
+| `make frontend` | Start frontend (waits for backend to be ready) |
 | `make stop` | Stop all services (keeps data) |
 | `make clean` | Stop and delete all data (volumes) |
 | `make logs` | Show all services logs |
@@ -86,7 +91,7 @@ make studio
 ### Example workflow:
 ```bash
 # 1. Start services
-make start
+make backend
 
 # 2. Edit code in services/auth-service/src/...
 # → Auth service automatically restarts
@@ -278,7 +283,8 @@ docker compose logs -f api-gateway
 
 ### 1. Start Development
 ```bash
-make start
+make backend   # terminal 1
+make frontend  # terminal 2
 ```
 
 ### 2. Make Code Changes
@@ -342,7 +348,7 @@ make clean   # Deletes all data
 docker compose up -d --build auth-service
 
 # Or rebuild all services
-make start  # Automatically rebuilds
+make backend  # Automatically rebuilds
 ```
 
 **Changed Dockerfile:**
@@ -364,7 +370,7 @@ make init-migrations
 ```bash
 # Stop, clean, and restart
 make clean
-make start
+make backend
 ```
 
 ---
@@ -457,7 +463,7 @@ Deletes:
 
 ## 📚 Getting Started
 
-1. ✅ Run `make start` to start all services
+1. ✅ Run `make backend` to start all services
 2. ✅ Open http://localhost:4000/graphql (API Gateway)
 3. ✅ Open http://localhost:8500 (Consul UI)
 4. ✅ Run `make studio` to view databases

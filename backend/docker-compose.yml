@@ -35,6 +35,23 @@ services:
       timeout: 5s
       retries: 5
 
+  chat-db:
+    image: postgres:15-alpine
+    container_name: chat-db
+    environment:
+      POSTGRES_DB: chat_db
+      POSTGRES_USER: chat_user
+      POSTGRES_PASSWORD: chat_pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - chat-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat_user -d chat_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   interaction-db:
     image: postgres:15-alpine
     container_name: interaction-db
@@ -236,6 +253,35 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  ai-chat-service:
+    build:
+      context: ./services/ai-chat-service
+      dockerfile: Dockerfile
+    container_name: ai-chat-service
+    ports:
+      - "5005:5005"
+    environment:
+      PORT: 5005
+      DATABASE_URL: postgresql://chat_user:chat_pass@chat-db:5432/chat_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      GEMINI_API_KEY: AQ.Ab8RN6JWRMQ4jV9KdTxpfPOO253699gWT4q9p9VwqUrMyvle9A
+      JWT_SECRET: your_jwt_secret_key_change_in_production
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SERVICE_ADDRESS: ai-chat-service
+    volumes:
+      - ./services/ai-chat-service/src:/app/src
+      - ./services/ai-chat-service/prisma:/app/prisma
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    restart: unless-stopped
+
   api-gateway:
     build:
       context: ./services/api-gateway
@@ -255,6 +301,7 @@ services:
       POST_SERVICE_URL: http://post-service:5002
       INTERACTION_SERVICE_URL: http://interaction-service:5003
       FEED_SERVICE_URL: http://feed-service:5004
+      AI_CHAT_SERVICE_URL: http://ai-chat-service:5005
       JAEGER_ENDPOINT: http://jaeger:14268/api/traces
     volumes:
       - ./services/api-gateway/src:/app/src
@@ -271,12 +318,15 @@ services:
         condition: service_started
       feed-service:
         condition: service_started
+      ai-chat-service:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   auth-db-data:
   post-db-data:
   interaction-db-data:
+  chat-db-data:
   redis-data:
   kafka-data:
 

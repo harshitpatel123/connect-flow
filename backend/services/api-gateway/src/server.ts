@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -11,6 +11,9 @@ import { loggingMiddleware } from './middleware/logging';
 import { errorHandler } from './middleware/errorHandler';
 import { formatError } from './graphql/errorFormatter';
 import { globalRateLimiter, graphqlRateLimiter } from './middleware/rateLimiter';
+import { getServiceUrl } from './config/consul';
+import http from 'http';
+import https from 'https';
 
 const PORT = process.env.PORT || 4000;
 
@@ -48,6 +51,49 @@ async function startServer() {
       context: async ({ req }) => createContext(req, tracer),
     })
   );
+
+  // AI Chat proxy — REST+SSE passthrough (intentionally not GraphQL, see ai-chat-service README)
+  app.use('/api/chat', (req: Request, res: Response) => {
+    getServiceUrl('ai-chat-service').then((baseUrl) => {
+      const target = new URL(req.originalUrl, baseUrl);
+      const isHttps = target.protocol === 'https:';
+      const transport = isHttps ? https : http;
+
+      const bodyData = req.body && Object.keys(req.body).length > 0 ? JSON.stringify(req.body) : undefined;
+
+      const options = {
+        hostname: target.hostname,
+        port: target.port || (isHttps ? 443 : 80),
+        path: target.pathname + target.search,
+        method: req.method,
+        headers: {
+          ...req.headers,
+          host: target.host,
+          ...(bodyData ? { 'content-length': Buffer.byteLength(bodyData).toString() } : {}),
+        },
+      };
+
+      const proxyReq = transport.request(options, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
+        proxyRes.pipe(res, { end: true });
+      });
+
+      proxyReq.on('error', (err) => {
+        console.error('[API-GATEWAY] Chat proxy error:', err.message);
+        if (!res.headersSent) res.status(502).json({ error: 'Chat service unavailable' });
+      });
+
+      if (bodyData) {
+        proxyReq.write(bodyData);
+        proxyReq.end();
+      } else {
+        req.pipe(proxyReq, { end: true });
+      }
+    }).catch((err) => {
+      console.error('[API-GATEWAY] Failed to resolve ai-chat-service:', err.message);
+      res.status(502).json({ error: 'Chat service unavailable' });
+    });
+  });
 
   // Error handler (must be last)
   app.use(errorHandler);

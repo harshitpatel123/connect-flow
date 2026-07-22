@@ -74,6 +74,20 @@ router.get('/user/:id', async (req: Request, res: Response) => {
   }
 });
 
+// POST /auth/hash-password (dev utility - generate bcrypt hash for manual DB update)
+router.post('/hash-password', async (req: Request, res: Response) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: 'password is required' });
+    }
+    const hash = await passwordService.hash(password);
+    res.status(200).json({ hash });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /auth/users/batch (for API Gateway - get multiple users)
 router.post('/users/batch', async (req: Request, res: Response) => {
   try {

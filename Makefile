@@ -11,7 +11,7 @@ FRONTEND_DIR := frontend
 BACKEND_PORT ?= 4000
 FRONTEND_PORT ?= 3000
 
-BACKEND_PORTS := $(BACKEND_PORT) 5001 5002 5003 5004 5432 5433 5434 6379 8500 9092 16686
+BACKEND_PORTS := $(BACKEND_PORT) 5001 5002 5003 5004 5005 5432 5433 5434 5435 6379 8500 9092 16686
 FRONTEND_PORTS := $(FRONTEND_PORT)
 PORT_SERVICES := postgresql postgresql@15-main redis-server redis valkey valkey-server
 
@@ -65,6 +65,7 @@ backend:
 	@cd $(BACKEND_DIR) && docker compose exec -T auth-service npx prisma migrate deploy 2>/dev/null || echo "  Auth DB migration skipped"
 	@cd $(BACKEND_DIR) && docker compose exec -T post-service npx prisma migrate deploy 2>/dev/null || echo "  Post DB migration skipped"
 	@cd $(BACKEND_DIR) && docker compose exec -T interaction-service npx prisma migrate deploy 2>/dev/null || echo "  Interaction DB migration skipped"
+	@cd $(BACKEND_DIR) && docker compose exec -T ai-chat-service npx prisma migrate deploy 2>/dev/null || echo "  Chat DB migration skipped"
 	@echo ""
 	@echo "[backend] All services started!"
 	@echo ""
@@ -114,6 +115,7 @@ init-migrations:
 	@cd $(BACKEND_DIR)/services/auth-service && npx prisma migrate dev --name init
 	@cd $(BACKEND_DIR)/services/post-service && npx prisma migrate dev --name init
 	@cd $(BACKEND_DIR)/services/interaction-service && npx prisma migrate dev --name init
+	@cd $(BACKEND_DIR)/services/ai-chat-service && npx prisma migrate dev --name init
 	@echo "[prisma] All migrations generated!"
 
 migrate:
@@ -121,6 +123,7 @@ migrate:
 	@cd $(BACKEND_DIR) && docker compose exec auth-service npx prisma migrate deploy
 	@cd $(BACKEND_DIR) && docker compose exec post-service npx prisma migrate deploy
 	@cd $(BACKEND_DIR) && docker compose exec interaction-service npx prisma migrate deploy
+	@cd $(BACKEND_DIR) && docker compose exec ai-chat-service npx prisma migrate deploy
 	@echo "[prisma] Migrations complete."
 
 studio:
@@ -128,12 +131,14 @@ studio:
 	@echo "  Auth DB:         http://localhost:5555"
 	@echo "  Post DB:         http://localhost:5556"
 	@echo "  Interaction DB:  http://localhost:5557"
+	@echo "  Chat DB:         http://localhost:5558"
 	@echo ""
 	@echo "Press Ctrl+C to stop all studios"
 	@trap 'kill 0' EXIT; \
 	(cd $(BACKEND_DIR)/services/auth-service && npx prisma studio --port 5555) & \
 	(cd $(BACKEND_DIR)/services/post-service && npx prisma studio --port 5556) & \
 	(cd $(BACKEND_DIR)/services/interaction-service && npx prisma studio --port 5557) & \
+	(cd $(BACKEND_DIR)/services/ai-chat-service && npx prisma studio --port 5558) & \
 	wait
 
 wait-backend:
